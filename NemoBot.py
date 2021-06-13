@@ -26,6 +26,7 @@ def help_command(update, context):
     update.message.chat.send_message("/postaviat\n/tvoichlen\n\
             /osuzhdat <bad word>\n\
             /osuzhdat -p <bad phrase>\n\
+            /osuzhdat -a\n\
             /neosuzhdat <bad word>\n\
             /neosuzhdat -p <bad phrase>\n\
             ")
@@ -64,14 +65,16 @@ def osuzhdau(update, context):
     print("not here")'''
 def osuzhdat(update, context):
     global mat
-    print(loadMats())
+    #print(loadMats())
     tokens=update.message.text.split(' ')
-    if(len(tokens)==2 and tokens[1]!="-p"):
+    if(len(tokens)==2 and tokens[1]!="-p" and tokens[1]!='-a'):
         n=loadMats(tokens[1])
         update.message.chat.send_message("Got it! Let's make community better together!(words : " +str(n)+ ")")
     elif len(tokens)>2 and tokens[1]=='-p':
-        n=loadMats(" ".join(tokens[2:]))
+        n=loadMats(" ".join(tokens[2:]).lower())
         update.message.chat.send_message("Got your phrase, let's osuzhdat together!(" + str(n)+ ")")
+    elif len(tokens)==2 and tokens[1]=='-a':
+        update.message.chat.send_message("Osuzhdau those words:\n" + str(loadMats()))
     else:
         update.message.chat.send_message("Plz, i need the word u don't wanna hear/see")
     mat=loadMats()
