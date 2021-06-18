@@ -5,6 +5,7 @@ from random import random as rnd
 import re
 import redis
 mat=[]
+calling204Phrases=[]
 r=redis.Redis("localhost", 6379)
 print("Starting...")
 
@@ -15,6 +16,14 @@ def loadMats(word=""):
         return words
     else:
         return r.lpush("mat", word)
+
+def addCalling204(word=""):
+    if(word==""):
+        mats=r.lrange("calling204", 0, -1)
+        words=[w.decode("utf-8") for w in mats]
+        return words
+    else:
+        return r.lpush("calling204", word)
 
 def removeFromList(list, key, n=100):
     return r.lrem(list, n, key)
@@ -29,6 +38,8 @@ def help_command(update, context):
             /osuzhdat -a\n\
             /neosuzhdat <bad word>\n\
             /neosuzhdat -p <bad phrase>\n\
+            /addCalling204Help <helping phrase>\n\
+            add \"calling204\" when joking\n\
             ")
 
 def error(update, context):
@@ -40,20 +51,22 @@ def kolonka(update, context):
     update.message.chat.send_message("Postaviat!" if rnd()>=0.5 else "Net, ne postaviat.")
 
 def osuzhdau(update, context):
+  global calling204Phrases
   osuzhdatN=0
   message=update.message.text.lower()
   #print(mat)
   for m in mat:
-    #print(re.match(r".*"+m.lower()+".*", message) + "-|")
     if(re.match(r".*"+m.lower()+".*", message)):
-      #print("osuzhdenie")    
       osuzhdatN+=1
-  #match=re.match(r".*"+"ХУЙ".lower()+".*", message)
   #print(match)
   if(osuzhdatN!=0):
     update.message.chat.send_message("осуждаю"+("."*osuzhdatN if osuzhdatN>0 else 1))
   if(re.match(r".*calling204.*", message)):
-    update.message.chat.send_message("Haha(i'm here for u)")
+    if(len(calling204Phrases)==0):
+        calling204Phrases=addCalling204()
+        if(len(calling204Phrases)==0):
+             calling204Phrases=['Haha, man, your are the best!']
+    update.message.chat.send_message(calling204Phrases[int(rnd()*len(calling204Phrases))])#"Haha(i'm here for u)")
     print("found help")
     
 '''def callingTOF(update, context):
@@ -97,6 +110,16 @@ def tvoichlen(update, context):
   update.message.chat.send_message("Moi chlen!" if rnd()>=0.5 else "Tvoi chlen!")
 def test(update, context):
     update.message.chat.send_message("test command")
+def addCalling204Help(update, context):
+    global calling204Phrases
+    phrase=update.message.text.split(" ")
+    if(len(phrase)>1):
+        result=addCalling204(" ".join(phrase[1:]))
+        update.message.chat.send_message("good: "+str(result))
+        calling204Phrases=addCalling204()
+        print("addCalling204Phrases len: " + str(result))
+    else:
+        update.message.chat.send_message("Invalid args!")
 
 def main():
     global mat
@@ -109,6 +132,7 @@ def main():
     dp.add_handler(CommandHandler("tvoichlen", tvoichlen))
     dp.add_handler(CommandHandler("osuzhdat", osuzhdat))
     dp.add_handler(CommandHandler("neosuzhdat", neosuzhdat))
+    dp.add_handler(CommandHandler("addCalling204Help", addCalling204Help))
     dp.add_handler(CommandHandler("test", test))
     dp.add_handler(MessageHandler(Filters.chat_type , osuzhdau))
     #dp.add_handler(MessageHandler(Filters.chat_type , callingTOF))
