@@ -4,6 +4,10 @@ from telegram import KeyboardButton
 from random import random as rnd
 import re
 import redis
+
+#local functions
+from socials import vk
+#vk(0,0)
 mat=[]
 calling204Phrases=[]
 r=redis.Redis("localhost", 6379)
@@ -134,6 +138,7 @@ def main():
     dp.add_handler(CommandHandler("neosuzhdat", neosuzhdat))
     dp.add_handler(CommandHandler("addCalling204Help", addCalling204Help))
     dp.add_handler(CommandHandler("test", test))
+    dp.add_handler(CommandHandler("vk", vk))
     dp.add_handler(MessageHandler(Filters.chat_type , osuzhdau))
     #dp.add_handler(MessageHandler(Filters.chat_type , callingTOF))
     dp.add_error_handler(error)
