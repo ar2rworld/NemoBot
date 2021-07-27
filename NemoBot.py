@@ -6,7 +6,9 @@ import re
 import redis
 
 #local functions
-from socials import vk
+from socials import post
+#from twitter2 import twitter_post
+
 #vk(0,0)
 mat=[]
 calling204Phrases=[]
@@ -138,7 +140,7 @@ def main():
     dp.add_handler(CommandHandler("neosuzhdat", neosuzhdat))
     dp.add_handler(CommandHandler("addCalling204Help", addCalling204Help))
     dp.add_handler(CommandHandler("test", test))
-    dp.add_handler(CommandHandler("vk", vk))
+    dp.add_handler(CommandHandler("post", post))
     dp.add_handler(MessageHandler(Filters.chat_type , osuzhdau))
     #dp.add_handler(MessageHandler(Filters.chat_type , callingTOF))
     dp.add_error_handler(error)

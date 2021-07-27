@@ -5,6 +5,7 @@ import time
 import json
 import re
 from requests_html import HTMLSession
+from twitter2 import twitter_post
 import os
 
 def dec(s):
@@ -50,21 +51,25 @@ def make_post(session, uid, hash, message='testing'):
     r0=session.post('https://vk.com/al_wall.php?act=post',data=data_post)
     #print(r0.text)
 
-def vk(update, context):
+def post(update, context):
     #print(update.message.chat.id, os.getenv('tg_my_id'))
-    if str(update.message.chat.id) == str(os.getenv('tg_my_id')):
+    if str(update.message.chat.id) == str(os.getenv('tg_my_id')) and len(update.message.text.split(' '))>1:
         s, uid = loginVK()
         my_page_url='https://vk.com/id'+uid
         #print(my_page_url)
         req_my_page = s.get(my_page_url)
         post_hash = findValue(req_my_page.text, 'post_hash')
+        message=update.message.text
+        space_index=message.index(' ')
+        twitter_post(message[space_index+1:])
         #print(post_hash)
         if s!=-1:
             print('logged in:', uid)
-            message=update.message.text
-            space_index=message.index(' ')
+            #if len(message.split(' '))>1:
             make_post(s, uid, post_hash, message[space_index+1:])
             update.message.chat.send_message('worked!')
+            #else:
+            #    update.messsage.chat.send_message('put some content')
         else:
             update.message.chat.send_message('did not worked(')
             
