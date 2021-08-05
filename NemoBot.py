@@ -49,7 +49,7 @@ def help_command(update, context):
             ")
 
 def error(update, context):
-    print(update)
+    print(f'ErrorUpdate: {update}')
     print(context.error)
     pass
 
@@ -59,29 +59,25 @@ def kolonka(update, context):
 def osuzhdau(update, context):
   global calling204Phrases
   osuzhdatN=0
-  message=update.message.text.lower()
-  #print(mat)
-  for m in mat:
-    if(re.match(r".*"+m.lower()+".*", message)):
-      osuzhdatN+=1
-  #print(match)
-  if(osuzhdatN!=0):
-    update.message.chat.send_message("осуждаю"+("."*osuzhdatN if osuzhdatN>0 else 1))
-  if(re.match(r".*calling204.*", message)):
-    if(len(calling204Phrases)==0):
-        calling204Phrases=addCalling204()
+  try:
+    message=update.message.text.lower()
+    #print(mat)
+    for m in mat:
+        if(re.match(r".*"+m.lower()+".*", message)):
+            osuzhdatN+=1
+    #print(match)
+    if(osuzhdatN!=0):
+        update.message.chat.send_message("осуждаю"+("."*osuzhdatN if osuzhdatN>0 else 1))
+    if(re.match(r".*calling204.*", message)):
         if(len(calling204Phrases)==0):
-             calling204Phrases=['Haha, man, your are the best!']
-    update.message.chat.send_message(calling204Phrases[int(rnd()*len(calling204Phrases))])#"Haha(i'm here for u)")
-    print("found help")
-    
-'''def callingTOF(update, context):
-  if(re.match(r".*calling204.*", message)):
-    update.message.chat.send_message("Haha(i'm here for u)")
-    print("found help")
-  message=update.message.text.lower()
-  else:
-    print("not here")'''
+            calling204Phrases=addCalling204()
+            if(len(calling204Phrases)==0):
+                calling204Phrases=['Haha, man, your are the best!']
+        update.message.chat.send_message(calling204Phrases[int(rnd()*len(calling204Phrases))])#"Haha(i'm here for u)")
+        print("found help")
+  except Exception as e:
+    print('Exception occured:', e)
+
 def osuzhdat(update, context):
     global mat
     #print(loadMats())
