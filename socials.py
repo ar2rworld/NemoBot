@@ -54,10 +54,11 @@ def loginVK():
     return (s3, uid)
 
 def make_post(session, uid, hash, message='testing'):
-    post='act=post&to_id=' +str(uid)+ '&type=all&friends_only=&best_friends_only=&close_comments=0&mute_notifications=0&mark_as_ads=0&official=&signed=&hash=' +hash+ '&from=&fixed=461&update_admin_tips=0&Message=' +str(message)+ '&al=1'
+    post='act=post&to_id=' +str(uid)+ '&type=all&friends_only=&best_friends_only=&close_comments=0&mute_notifications=0&mark_as_ads=0&official=&signed=&hash=' +hash+ '&from=&fixed=461&update_admin_tips=0&al=1'
     data_post=dec(post)
+    data_post['Message'] = message
     r0=session.post('https://vk.com/al_wall.php?act=post',data=data_post)
-    #print(r0.text)
+    return r0.text
 
 def post(update, context):
     #print(update.message.chat.id, os.getenv('tg_my_id'))
