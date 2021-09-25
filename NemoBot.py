@@ -7,7 +7,10 @@ import redis
 
 #local functions
 from socials import post
-#from twitter2 import twitter_post
+from stats import save_conversation
+from send_message import send_message
+from echo_commands import my_telegram_id
+
 
 #vk(0,0)
 mat=[]
@@ -44,6 +47,7 @@ def help_command(update, context):
             /osuzhdat -a\n\
             /neosuzhdat <bad word>\n\
             /neosuzhdat -p <bad phrase>\n\
+            /my_telegram_id\n\
             /addCalling204Help <helping phrase>\n\
             add \"calling204\" when joking\n\
             ")
@@ -61,7 +65,9 @@ def osuzhdau(update, context):
   osuzhdatN=0
   try:
     message=update.message.text.lower()
-    #print(mat)
+    
+    save_conversation(r, update.message)
+
     for m in mat:
         if(re.match(r".*"+m.lower()+".*", message)):
             osuzhdatN+=1
@@ -110,8 +116,10 @@ def neosuzhdat(update, context):
 
 def tvoichlen(update, context):
   update.message.chat.send_message("Moi chlen!" if rnd()>=0.5 else "Tvoi chlen!")
+
 def test(update, context):
     update.message.chat.send_message("test command")
+
 def addCalling204Help(update, context):
     global calling204Phrases
     phrase=update.message.text.split(" ")
@@ -134,9 +142,11 @@ def main():
     dp.add_handler(CommandHandler("tvoichlen", tvoichlen))
     dp.add_handler(CommandHandler("osuzhdat", osuzhdat))
     dp.add_handler(CommandHandler("neosuzhdat", neosuzhdat))
+    dp.add_handler(CommandHandler("my_telegram_id", my_telegram_id))
     dp.add_handler(CommandHandler("addCalling204Help", addCalling204Help))
     dp.add_handler(CommandHandler("test", test))
     dp.add_handler(CommandHandler("post", post))
+    dp.add_handler(CommandHandler("send_message", send_message))
     dp.add_handler(MessageHandler(Filters.chat_type , osuzhdau))
     #dp.add_handler(MessageHandler(Filters.chat_type , callingTOF))
     dp.add_error_handler(error)
@@ -144,4 +154,3 @@ def main():
     updater.idle()
 
 main()
-

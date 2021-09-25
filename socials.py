@@ -61,8 +61,9 @@ def find_to_parameter(html):
 def loginVK():
     s3 = HTMLSession()
     i=0
-    for i in range(5):
-        time.sleep(0.5)
+    to=''
+    for i in range(20):
+        time.sleep(i)
         r3 = s3.get('https://vk.com/')
         d={}
         for tag in findTags(r3.text, 'input', 'hidden'):
@@ -70,7 +71,9 @@ def loginVK():
         #You email/phone and password
         d['email'] = tokens['vk']['email']
         d['pass']=tokens['vk']['pass']
-        to = find_to_parameter(r3.text)
+        if i==0:
+            to = find_to_parameter(r3.text)
+        d['to'] = to
         print(d)
         url='https://login.vk.com/?act=login'
         r3=s3.post(url, data=d)
@@ -80,6 +83,7 @@ def loginVK():
         if has_sid:
             uid = findValue(r3.text, 'uid')
             return (s3, uid)
+        to = find_to_parameter(s3.get('https://vk.com/im').text.replace('\\', ''))
     print(f'loginVk() didnot work, attemps: {i}')
     return (None, None)
 #loginVK()
