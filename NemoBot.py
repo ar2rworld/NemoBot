@@ -11,6 +11,7 @@ from stats import save_conversation
 from send_message import send_message
 from echo_commands import my_telegram_id
 from youtube_notifications import setupJobQueue
+from mongo_connection import check_mongo
 
 
 #vk(0,0)
@@ -148,6 +149,9 @@ def main():
     dp.add_handler(CommandHandler("test", test))
     dp.add_handler(CommandHandler("post", post))
     dp.add_handler(CommandHandler("send_message", send_message))
+
+    dp.add_handler(CommandHandler("check_mongo", check_mongo))
+
     dp.add_handler(MessageHandler(Filters.chat_type , osuzhdau))
     #dp.add_handler(MessageHandler(Filters.chat_type , callingTOF))
     dp.add_error_handler(error)

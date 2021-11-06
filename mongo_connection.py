@@ -1,5 +1,8 @@
-from pymongo import MongoClient, results
+from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
+import os
+
+from access_tokens import mongo
 
 def get_db(mongo_obj: object):
   connection_string = f'mongodb://{mongo_obj["host"]}:{mongo_obj["port"]}'
@@ -11,7 +14,21 @@ def get_db(mongo_obj: object):
     print('mongo ConnectionFailure')
     raise ConnectionFailure    
 
-def test_get_db():
-  client = get_db({'host': 'localhost', 'port': '27027',  'dbname': 'nemobot'})
-  print(client)
-#test_get_db()
+def check_mongo(update, context):
+  try:
+    if str(update.message.chat.id) == str(os.getenv('tg_my_id')):
+      tokens = update.message.text.split(' ')
+      dbname = tokens[1]
+      collection = tokens[2]
+      client = get_db(mongo)
+      db = client[dbname]
+      rows = db[collection].find()
+      for i in rows:
+        update.message.chat.send_message(str(i))
+    else:
+      update.message.chat.send_message('not my owner')
+
+  except Exception as e:
+    update.message.chat.send_message(str(e))
+  finally:
+    client.close()
