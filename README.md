@@ -14,9 +14,11 @@
     <li>psycopg2-binary</li>
     <li>python-telegram-bot</li>
     <li>python-twitter</li>
+    <li>pymongo</li>
   </ul>
 <li>Redis</li>
 <li>Postgres</li>
+<li>MongoDB</li>
 </ul>
 
 ## Run

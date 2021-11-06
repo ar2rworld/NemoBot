@@ -53,7 +53,7 @@ def watchChannels(context):
         })
 
 def setupJobQueue(dp):
-  dp.job_queue.run_repeating(callback=watchChannels, interval=10)
+  dp.job_queue.run_repeating(callback=watchChannels, interval=60)
 
   
 

@@ -10,6 +10,7 @@ from socials import post
 from stats import save_conversation
 from send_message import send_message
 from echo_commands import my_telegram_id
+from youtube_notifications import setupJobQueue
 
 
 #vk(0,0)
@@ -150,6 +151,7 @@ def main():
     dp.add_handler(MessageHandler(Filters.chat_type , osuzhdau))
     #dp.add_handler(MessageHandler(Filters.chat_type , callingTOF))
     dp.add_error_handler(error)
+    setupJobQueue(dp)
     updater.start_polling(1)
     updater.idle()
 
