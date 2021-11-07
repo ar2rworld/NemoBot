@@ -13,16 +13,15 @@ def composeMessage(video: object):
 
 
 def watchChannels(context):
-  db = get_db(access_tokens.mongo)
+  db = get_db(access_tokens.mongo)[access_tokens.mongo['dbname']]
   base_uri = 'https://youtube.googleapis.com/youtube/v3/search?part=snippet'
   key = access_tokens.tokens['youtube']['key']
   channelsToWatch = db['channelsToWatch']
 
   for i in channelsToWatch.find():
     channelId = i['channelId']
-    publishedAfter = i.get('publishedAfter', str(datetime.now().isoformat())+'Z')
+    publishedAfter = i.get('publishedAfter', str(datetime(2020, 12, 31).isoformat())+'Z')
     url = f'{base_uri}&channelId={channelId}&key={key}&order=date&maxResults=10&publishedAfter={publishedAfter}'
-    print(url)
     result = requests.get(url)
     data = json.loads(result.text)['items']
     videosToNotify = []

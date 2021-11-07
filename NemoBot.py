@@ -11,13 +11,12 @@ from stats import save_conversation
 from send_message import send_message
 from echo_commands import my_telegram_id
 from youtube_notifications import setupJobQueue
-from mongo_connection import check_mongo
 
 
 #vk(0,0)
 mat=[]
 calling204Phrases=[]
-r=redis.Redis("localhost", 6379)
+r=redis.Redis(os.getenv('redis_host', os.getenv('redis_port')))
 print("Starting...")
 
 def loadMats(word=""):
@@ -149,13 +148,12 @@ def main():
     dp.add_handler(CommandHandler("test", test))
     dp.add_handler(CommandHandler("post", post))
     dp.add_handler(CommandHandler("send_message", send_message))
-
-    dp.add_handler(CommandHandler("check_mongo", check_mongo))
-
     dp.add_handler(MessageHandler(Filters.chat_type , osuzhdau))
     #dp.add_handler(MessageHandler(Filters.chat_type , callingTOF))
     dp.add_error_handler(error)
     setupJobQueue(dp)
+    dp.bot.send_message(os.getenv("tg_my_id"), "hello comrade!")
+    
     updater.start_polling(1)
     updater.idle()
 
