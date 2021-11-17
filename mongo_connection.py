@@ -15,6 +15,7 @@ def get_client():
       print("mongo connected")
       return client
     else:
+      raise Exception('mongo didnot PONG back :/')
       return None
   except ConnectionFailure:
     print('mongo ConnectionFailure')

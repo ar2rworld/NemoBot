@@ -1,4 +1,6 @@
-import psycopg2
+from os import getenv
+
+from mongo_connection import get_client
 from access_tokens import postgres
 
 def save_conversation(r, message):
@@ -12,21 +14,11 @@ def save_conversation(r, message):
   if(str(chat_id).encode('ascii') not in chat_ids):
     r.lpush("chat_ids", chat_id)
     try:
-      conn = psycopg2.connect(
-        dbname = postgres["dbname"],
-        user = postgres["user"],
-        host = postgres["host"],
-        port = postgres["port"],
-        password = postgres["password"],
-      )
-      cursor = conn.cursor()
+      client = get_client()
+      db = client[getenv('mongo_dbname')]
 
-      print(f"INSERT INTO chats (id, name) VALUES ('%s', '%s') returning id;", (chat_id, chat_name))
-      cursor.execute(f"INSERT INTO chats (id, name) VALUES ('%s', %s) returning id;", (chat_id, chat_name))
-      id = cursor.fetchone()[0]
-
-      conn.commit()
+      db['chats'].insert_one({"chat_id": chat_id, "chat_name": chat_name})
     except Exception as e:
-      print(e)
+      print(f"Error while saving conversation info:\n{e}")
     finally:
-      conn.close()
+      client.close()

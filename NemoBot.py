@@ -134,7 +134,7 @@ def addCalling204Help(update, context):
 
 def main():
     global mat
-    updater=Updater(getenv["NemoBotToken"], use_context=True)
+    updater=Updater(getenv("NemoBotToken"), use_context=True)
     mat=loadMats()
     dp=updater.dispatcher
     dp.add_handler(CommandHandler("start", start_command))

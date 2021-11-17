@@ -12,8 +12,12 @@ def send_notifications(video: Tuple[str,str,str,], telegramDispatcher):
       db = client[getenv("mongo_dbname")]
       channelsToWatch = db["channelsToWatch"]
       text = f'\n{title}\n{link}'
-      for channel in channelsToWatch.find({"channelId": channelId}):
-        telegramDispatcher.bot.send_message(channel.chat_id, channel.get("message")+text)
+      channels = channelsToWatch.find({"channelId": channelId})
+      if channels.count() > 0:
+        for channel in channels:
+          telegramDispatcher.bot.send_message(channel["chat_id"], channel.get("message")+text)
+      else:
+        raise Exception("Received notification bach didnot find any chats to notify")
     except Exception as e:
       print(e)
       telegramDispatcher.bot.send_message(getenv('tg_my_id'), str(e))

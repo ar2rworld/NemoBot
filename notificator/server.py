@@ -1,3 +1,4 @@
+import logging
 from http.server import HTTPServer
 from socketserver import BaseRequestHandler
 from typing import Callable, Tuple
@@ -11,16 +12,9 @@ class myHTTPServer(HTTPServer):
 
 def runServer(telegramDispatcher, PORT):
 
-    with myHTTPServer(telegramDispatcher, ("", PORT), Handler) as httpd:
-        print("serving at port", PORT)
+    with myHTTPServer(telegramDispatcher, ("0.0.0.0", int(PORT)), Handler) as httpd:
+        logging.info(f"serving at port: {PORT}")
         httpd.serve_forever()
         
-class telegramDispatcherMock():
-    def __init__(self, m) -> None:
-        self.m = m
-    def send_message(self):
-        print(self.m)
-#d = telegramDispatcherMock('message')
 #runServer(d)
 
-    
