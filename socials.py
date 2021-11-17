@@ -96,26 +96,22 @@ def make_post(session, uid, hash, message='testing'):
     return r0.text
 
 def post(update, context):
-    #print(update.message.chat.id, os.getenv('tg_my_id'))
     if str(update.message.chat.id) == str(os.getenv('tg_my_id')) and len(update.message.text.split(' '))>1:
         message=update.message.text
         first_token = message.split(' ')[1]
         out=''
         if '-' in first_token:
             second_space = message.index(' ', message.index(' ')+1)
+            message = message[second_space:]
             if 'li' in first_token:
-                message = message[second_space:]
                 out += linkedin(message) +'\n'
             if 'vk' in first_token:
                 s, uid = loginVK()
                 response0 = s.get('https://oauth.vk.com/authorize?client_id=7888891&display=page&redirect_uri=https://vk.com/ar2r.life&scope=8192&response_type=token&v=5.131&state=123456') 
-                #print(response0.text)
                 my_page_url='https://vk.com/id'+str(uid)
-                #print(my_page_url)
                 req_my_page = s.get(my_page_url)
                 post_hash = findValue(req_my_page.text, 'post_hash')
                 update.message.chat.send_message('logged in:'+uid)
-                message = message[second_space:]
                 if(s != None):
                     out += make_post(s, uid, post_hash, message) +'\n'
             if 'tw' in first_token:

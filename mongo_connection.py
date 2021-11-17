@@ -1,30 +1,32 @@
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
-import os
+from os import getenv
 
 from access_tokens import mongo
 
-def get_db(mongo_obj: object):
-  connection_string = f'mongodb://{mongo_obj["host"]}:{mongo_obj["port"]}'
+def get_client():
+  connection_string = f'mongodb://{getenv("mongo_host")}:{getenv("mongo_port")}'
   client = MongoClient(
     connection_string,
-    username=os.getenv('MONGO_INITDB_ROOT_USERNAME'),
-    password=os.getenv('MONGO_INITDB_ROOT_PASSWORD'))
+    username=getenv('MONGO_INITDB_ROOT_USERNAME'),
+    password=getenv('MONGO_INITDB_ROOT_PASSWORD'))
   try:
-    if client[mongo_obj["dbname"]].command('ping'):
+    if client[getenv("mongo_dbname")].command('ping'):
       print("mongo connected")
       return client
+    else:
+      return None
   except ConnectionFailure:
     print('mongo ConnectionFailure')
-    raise ConnectionFailure    
+    raise ConnectionFailure
 
 def check_mongo(update, context):
   try:
-    if str(update.message.chat.id) == str(os.getenv('tg_my_id')):
+    if str(update.message.chat.id) == str(getenv('tg_my_id')):
       tokens = update.message.text.split(' ')
       dbname = tokens[1]
       collection = tokens[2]
-      client = get_db(mongo)
+      client = get_client(mongo)
       db = client[dbname]
       rows = db[collection].find()
       for i in rows:
