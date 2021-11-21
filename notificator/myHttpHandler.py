@@ -36,7 +36,6 @@ class Handler(BaseHTTPRequestHandler):
         find_obj = { "channelId" : channelId}
         if obj.get("hub.verify_token"):
           find_obj["verify_token"] = obj["hub.verify_token"]
-        
         channels = self.server.db["channelsToWatch"].find(find_obj)
         if channels.count():
           self.send_response(200)
@@ -46,5 +45,5 @@ class Handler(BaseHTTPRequestHandler):
           self.send_response(404)
           self.end_headers()
     except Exception as e:
-      self.send_error(404, f'Error: {e}')
       print(e)
+      self.send_error(404, f'Error: {e}')

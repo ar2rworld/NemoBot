@@ -154,7 +154,7 @@ def main():
     #dp.add_handler(MessageHandler(Filters.chat_type , callingTOF))
     dp.add_error_handler(error)
 
-    _thread.start_new_thread(runServer, (dp,getenv('notificator_port')))
+    _thread.start_new_thread(runServer, (dp, db, getenv('notificator_port')))
     subscribe(dp, db, getenv("callbackUrl"), getenv("hubUrl"), getenv("tg_my_id") )
 
 
