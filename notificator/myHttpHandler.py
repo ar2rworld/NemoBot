@@ -1,10 +1,12 @@
 from http.server import BaseHTTPRequestHandler
 from os import getenv
+import json
 import socketserver
 from typing import Tuple
 
 from notificator.send_notifications import send_notifications
 from notificator.xmlParser import xmlParser
+from utils.parseUrl import parseUrl
 
 class Handler(BaseHTTPRequestHandler):
   def __init__(self, request: bytes, client_address: Tuple[str, int], server: socketserver.BaseServer) -> None:
@@ -22,11 +24,22 @@ class Handler(BaseHTTPRequestHandler):
       print(e)
   def do_GET(self):
     try:
-      self.server.telegramDispatcher.bot.send_message(getenv('tg_my_id'),
-        f"I got a message from {self.client_address}(might be important):\n{self.requestline}")      
-      self.send_response(200)
-      self.end_headers()
+      self.server.telegramDispatcher.bot.send_message(
+        getenv('tg_my_id'),
+        f"I got a message from {self.client_address}(might be important):\n{self.requestline}"
+      )
+      if "?" in self.requestline:
+        temp = self.requestline.split("?")[1]
+        obj = parseUrl(temp[:temp.index(" ")])
+        channelId = obj["hub.topic"].split("channel_id")[1][3:]
+        channels = self.server.db["channelsToWatch"].find({ "channelId" : channelId, "verify_token" : obj["hub.verify_token"]})
+        if channels.count():
+          self.send_response(200)
+          self.end_headers()
+          self.wfile.write(bytes(obj["hub.challenge"], "utf-8"))
+        else:
+          self.send_response(404)
+          self.end_headers()
     except Exception as e:
-      self.send_error(404, 'Error: %s' % e)
+      self.send_error(404, f'Error: {e}')
       print(e)
-

@@ -11,9 +11,10 @@ from socials import post
 from stats import save_conversation
 from send_message import send_message
 from echo_commands import my_telegram_id
+from mongo_connection import get_client
 from notificator.server import runServer
+from notificator.subscribe import subscribe
 
-#vk(0,0)
 mat=[]
 calling204Phrases=[]
 r=redis.Redis(getenv('redis_host', getenv('redis_port')))
@@ -136,6 +137,7 @@ def main():
     global mat
     updater=Updater(getenv("NemoBotToken"), use_context=True)
     mat=loadMats()
+    db = get_client()[getenv("mongo_dbname")]
     dp=updater.dispatcher
     dp.add_handler(CommandHandler("start", start_command))
     dp.add_handler(CommandHandler("help", help_command))
@@ -153,6 +155,8 @@ def main():
     dp.add_error_handler(error)
 
     _thread.start_new_thread(runServer, (dp,getenv('notificator_port')))
+    subscribe(dp, db, getenv("callbackUrl"), getenv("hubUrl"), getenv("tg_my_id") )
+
 
     dp.bot.send_message(getenv("tg_my_id"), "hello comrade!")  
     updater.start_polling(1)
