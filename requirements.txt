@@ -1,0 +1,6 @@
+redis
+requests_html
+pymongo
+python-telegram-bot
+python-twitter
+
