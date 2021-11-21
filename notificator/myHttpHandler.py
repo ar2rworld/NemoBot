@@ -32,7 +32,12 @@ class Handler(BaseHTTPRequestHandler):
         temp = self.requestline.split("?")[1]
         obj = parseUrl(temp[:temp.index(" ")])
         channelId = obj["hub.topic"].split("channel_id")[1][3:]
-        channels = self.server.db["channelsToWatch"].find({ "channelId" : channelId, "verify_token" : obj["hub.verify_token"]})
+        
+        find_obj = { "channelId" : channelId}
+        if obj.get("hub.verify_token"):
+          find_obj["verify_token"] = obj["hub.verify_token"]
+        
+        channels = self.server.db["channelsToWatch"].find(find_obj)
         if channels.count():
           self.send_response(200)
           self.end_headers()
