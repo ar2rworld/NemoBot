@@ -4,3 +4,4 @@ __pycache__
 1.html
 2.html
 postgres
+*.log
