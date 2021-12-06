@@ -37,7 +37,10 @@ class Handler(BaseHTTPRequestHandler):
         if obj.get("hub.verify_token"):
           find_obj["verify_token"] = obj["hub.verify_token"]
         channels = self.server.db["channelsToWatch"].find(find_obj)
-        if channels.count():
+        count = 0
+        for channel in channels:
+          count += 1
+        if count:
           self.send_response(200)
           self.end_headers()
           self.wfile.write(bytes(obj["hub.challenge"], "utf-8"))
