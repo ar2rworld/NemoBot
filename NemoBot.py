@@ -155,7 +155,7 @@ def main():
     dp.add_error_handler(error)
 
     _thread.start_new_thread(runServer, (dp, db, getenv('notificator_port')))
-    dp.job_queue.run_repeating(lambda x: subscribe(dp, db, getenv("callbackUrl"), getenv("hubUrl"), getenv("tg_my_id") ), 86400)
+    dp.job_queue.run_repeating(lambda x: subscribe(dp, db, getenv("callbackUrl"), getenv("hubUrl"), getenv("tg_my_id") ), 86400, first=0)
 
     dp.bot.send_message(getenv("tg_my_id"), "hello comrade!")  
     updater.start_polling(1)
