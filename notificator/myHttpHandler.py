@@ -15,13 +15,14 @@ class Handler(BaseHTTPRequestHandler):
     try:
       content_length = int(self.headers['Content-Length'])
       result = xmlParser(self.rfile, content_length)
-      send_notifications(result, self.server.telegramDispatcher)
-
+      send_notifications(result, self.server.telegramDispatcher, self.server.db)
+      
       self.send_response(200)
       self.end_headers()
     except Exception as e:
-      self.send_error(404, 'Error: %s' % e)
       print(e)
+      self.send_error(404, 'Error: %s' % e)
+
   def do_GET(self):
     try:
       self.server.telegramDispatcher.bot.send_message(

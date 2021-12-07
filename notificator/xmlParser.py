@@ -1,9 +1,16 @@
 import xml.dom.minidom
+import logging
+
+logging.basicConfig(filename="xmlBody.log", filemode="w", level=logging.INFO)
+
 
 def xmlParser(file, content_length):
   try:
     print('Starting parsing')
     body = file.read(content_length)
+
+    logging.info(body)
+
     DOMTree = xml.dom.minidom.parseString(body)
     videos = DOMTree.getElementsByTagName("entry")
 
