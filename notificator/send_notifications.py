@@ -8,6 +8,15 @@ def send_notifications(video: Tuple[str,str,str,], telegramDispatcher, db):
       channelsToWatch = db["channelsToWatch"]
       channels = channelsToWatch.find({"channelId": channelId})
       for channel in channels:
+        lastVideoLink = channel.get("lastVideoLink")
+        if lastVideoLink == link:
+          continue
+        channelsToWatch.update_one(channel, {
+          "$set" : {
+            "lastVideoLink" : link
+          }
+        })
+
         text = f"\n{title}\n{link}"
         if channel.get("message"):
           text = f"{channel.get('message')}\n{text}"
