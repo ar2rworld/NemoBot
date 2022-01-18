@@ -11,7 +11,7 @@ from socials import post
 from stats import save_conversation
 from send_message import send_message
 from echo_commands import my_telegram_id
-from mongo_connection import get_client
+from mongo_connection import get_client, check_mongo
 from notificator.server import runServer
 from notificator.subscribe import subscribe
 
@@ -52,6 +52,7 @@ def help_command(update, context):
             /my_telegram_id\n\
             /addCalling204Help <helping phrase>\n\
             add \"calling204\" when joking\n\
+            /check_mongo <dbName> <tableName>\
             ")
 
 def error(update, context):
@@ -150,6 +151,7 @@ def main():
     dp.add_handler(CommandHandler("test", test))
     dp.add_handler(CommandHandler("post", post))
     dp.add_handler(CommandHandler("send_message", send_message))
+    dp.add_handler(CommandHandler("check_mongo", check_mongo))
     dp.add_handler(MessageHandler(Filters.chat_type , osuzhdau))
     #dp.add_handler(MessageHandler(Filters.chat_type , callingTOF))
     dp.add_error_handler(error)

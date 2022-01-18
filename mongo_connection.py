@@ -27,12 +27,14 @@ def check_mongo(update, context):
       tokens = update.message.text.split(' ')
       dbname = tokens[1]
       collection = tokens[2]
-      client = get_client(mongo)
+      client = get_client()
       db = client[dbname]
       rows = db[collection].find()
+      count = 0
       for i in rows:
         update.message.chat.send_message(str(i))
-      if not rows.count():
+        count += 1
+      if count == 0:
           update.message.chat.send_message("0 rows found")
     else:
       update.message.chat.send_message('not my owner')
