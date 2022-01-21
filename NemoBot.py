@@ -5,6 +5,7 @@ from random import random as rnd
 import re
 import redis
 import _thread
+import logging
 
 #local functions
 from socials import post
@@ -17,7 +18,10 @@ from notificator.subscribe import subscribe
 
 mat=[]
 calling204Phrases=[]
-r=redis.Redis(getenv('redis_host', getenv('redis_port')))
+r=redis.Redis(getenv('redis_host'), getenv('redis_port'))
+
+logging.basicConfig(filename='error.log', encoding='utf-8', level=logging.DEBUG)
+
 print("Starting...")
 
 def loadMats(word=""):
@@ -28,7 +32,7 @@ def loadMats(word=""):
     else:
         return r.lpush("mat", word)
 
-def addCalling204(word=""):
+def addCalling204(word=""): 
     if(word==""):
         mats=r.lrange("calling204", 0, -1)
         words=[w.decode("utf-8") for w in mats]
@@ -56,10 +60,9 @@ def help_command(update, context):
             ")
 
 def error(update, context):
-    print(f'ErrorUpdate: {update}')
-    print(context.error)
-    pass
-
+    logging.error(update)
+    logging.error(context.error)
+    
 def kolonka(update, context):
     update.message.chat.send_message("Postaviat!" if rnd()>=0.5 else "Net, ne postaviat.")
 
@@ -156,7 +159,7 @@ def main():
     #dp.add_handler(MessageHandler(Filters.chat_type , callingTOF))
     dp.add_error_handler(error)
 
-    _thread.start_new_thread(runServer, (dp, db, getenv('notificator_port')))
+    _thread.start_new_thread(runServer, (dp, db, getenv('notification_host'), getenv('notificator_port')))
     dp.job_queue.run_repeating(lambda x: subscribe(dp, db, getenv("callbackUrl"), getenv("hubUrl"), getenv("tg_my_id") ), 86400, first=1)
 
     dp.bot.send_message(getenv("tg_my_id"), "hello comrade!")  

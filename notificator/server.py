@@ -11,9 +11,9 @@ class myHTTPServer(HTTPServer):
         self.telegramDispatcher = telegramDispatcher
         self.db = db
 
-def runServer(telegramDispatcher, db, PORT):
+def runServer(telegramDispatcher, db, HOST, PORT):
 
-    with myHTTPServer(telegramDispatcher, db, ("0.0.0.0", int(PORT)), Handler) as httpd:
+    with myHTTPServer(telegramDispatcher, db, (HOST, int(PORT)), Handler) as httpd:
         logging.info(f"serving at port: {PORT}")
         httpd.serve_forever()
         

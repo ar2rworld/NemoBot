@@ -5,3 +5,4 @@ __pycache__
 2.html
 postgres
 *.log
+launch.json

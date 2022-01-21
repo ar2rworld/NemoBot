@@ -9,6 +9,7 @@ import os
 from twitter2 import twitter_post
 from linkedin2 import linkedin
 from access_tokens import tokens
+from decorators.adminOnly import adminOnly
 
 def dec(s):
     d={}
@@ -95,8 +96,9 @@ def make_post(session, uid, hash, message='testing'):
     r0=session.post('https://vk.com/al_wall.php?act=post',data=data_post)
     return r0.text
 
+@adminOnly
 def post(update, context):
-    if str(update.message.chat.id) == str(os.getenv('tg_my_id')) and len(update.message.text.split(' '))>1:
+    if len(update.message.text.split(' '))>1:
         message=update.message.text
         first_token = message.split(' ')[1]
         out=''
