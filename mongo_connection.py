@@ -39,5 +39,6 @@ def check_mongo(update, context):
     
   except Exception as e:
     update.message.chat.send_message(str(e))
+    raise e
   finally:
     client.close()

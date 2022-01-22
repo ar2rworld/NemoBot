@@ -1,9 +1,16 @@
 import requests
 import logging
 from time import sleep
+
+from decorators.adminOnly import adminOnly
 logging.basicConfig(filename="subscribe.log", filemode="w", level=logging.DEBUG)
 
-def subscribe(dp, db, callbackUrl, hubUrl, tg_my_id):
+def subscribe(dp):
+  callbackUrl = dp.user_data['callbackUrl']
+  hubUrl =      dp.user_data['hubUrl']
+  tg_my_id =    dp.user_data['tg_my_id']
+  db =          dp.user_data['db']
+  
   with open("subscribe.log", mode="w") as f:
     f.write("___very_beginning___")
     f.close()
@@ -45,3 +52,6 @@ def subscribe(dp, db, callbackUrl, hubUrl, tg_my_id):
     finally:
       sleep(5)
 
+@adminOnly
+def subscribeToChannels(update, context):
+  subscribe(context.dispatcher)

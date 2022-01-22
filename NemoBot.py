@@ -6,6 +6,7 @@ import re
 import redis
 import _thread
 import logging
+from decorators.adminOnly import adminOnly
 
 #local functions
 from socials import post
@@ -14,7 +15,7 @@ from send_message import send_message
 from echo_commands import my_telegram_id
 from mongo_connection import get_client, check_mongo
 from notificator.server import runServer
-from notificator.subscribe import subscribe
+from notificator.subscribe import subscribe, subscribeToChannels
 
 mat=[]
 calling204Phrases=[]
@@ -143,6 +144,12 @@ def main():
     mat=loadMats()
     db = get_client()[getenv("mongo_dbname")]
     dp=updater.dispatcher
+
+    dp.user_data["db"] = db
+    dp.user_data["callbackUrl"] = getenv("callbackUrl")
+    dp.user_data["hubUrl"] = getenv("hubUrl")
+    dp.user_data["tg_my_id"] = getenv("tg_my_id")
+
     dp.add_handler(CommandHandler("start", start_command))
     dp.add_handler(CommandHandler("help", help_command))
     dp.add_handler(CommandHandler("postaviat", kolonka))
@@ -155,14 +162,14 @@ def main():
     dp.add_handler(CommandHandler("post", post))
     dp.add_handler(CommandHandler("send_message", send_message))
     dp.add_handler(CommandHandler("check_mongo", check_mongo))
+    dp.add_handler(CommandHandler("subscribeToChannels" , subscribeToChannels))
     dp.add_handler(MessageHandler(Filters.chat_type , osuzhdau))
-    #dp.add_handler(MessageHandler(Filters.chat_type , callingTOF))
     dp.add_error_handler(error)
 
     _thread.start_new_thread(runServer, (dp, db, getenv('notification_host'), getenv('notificator_port')))
-    dp.job_queue.run_repeating(lambda x: subscribe(dp, db, getenv("callbackUrl"), getenv("hubUrl"), getenv("tg_my_id") ), 86400, first=1)
+    dp.job_queue.run_repeating(lambda x: subscribe(dp), 86400, first=1)
 
-    dp.bot.send_message(getenv("tg_my_id"), "hello comrade!")  
+    dp.bot.send_message(dp.user_data["tg_my_id"], "hello comrade!")  
     updater.start_polling(1)
     updater.idle()
 
