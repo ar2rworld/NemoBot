@@ -166,7 +166,7 @@ def main():
     dp.add_handler(MessageHandler(Filters.chat_type , osuzhdau))
     dp.add_error_handler(error)
 
-    _thread.start_new_thread(runServer, (dp, db, getenv('notification_host'), getenv('notificator_port')))
+    _thread.start_new_thread(runServer, (dp, db, getenv('notificator_host'), getenv('notificator_port')))
     dp.job_queue.run_repeating(lambda x: subscribe(dp), 86400, first=1)
 
     dp.bot.send_message(dp.user_data["tg_my_id"], "hello comrade!")  

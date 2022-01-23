@@ -57,6 +57,7 @@ MONGO_INITDB_ROOT_USERNAME=MONGO_INITDB_ROOT_USERNAME
 MONGO_INITDB_ROOT_PASSWORD=MONGO_INITDB_ROOT_PASSWORD
 NemoBotToken=Telegram_Bot_Token
 tg_my_id=Your_Telegram_Id
+notificator_host=notificator_host
 notificator_port=notificator_port
 callbackUrl=url_to_you_instance.com/add_proxy_pass_to_nginx
 hubUrl=https://pubsubhubbub.appspot.com
