@@ -1,48 +1,23 @@
 from os import getenv
 from telegram.ext import *
 from telegram import KeyboardButton
-from random import random as rnd
-import re
 import redis
 import _thread
 import logging
 from decorators.adminOnly import adminOnly
 
 #local functions
+from room204 import addCalling204Help, loadList, kolonka, osuzhdau, tvoichlen, osuzhdat, neosuzhdat 
 from socials import post
-from stats import save_conversation
 from send_message import send_message
 from echo_commands import my_telegram_id
 from mongo_connection import get_client, check_mongo
 from notificator.server import runServer
 from notificator.subscribe import subscribe, subscribeToChannels
 
-mat=[]
-calling204Phrases=[]
-r=redis.Redis(getenv('redis_host'), getenv('redis_port'))
-
 logging.basicConfig(filename='error.log', encoding='utf-8', level=logging.DEBUG)
 
 print("Starting...")
-
-def loadMats(word=""):
-    if(word==""):
-        mats = r.lrange("mat", 0, -1)
-        words=[w.decode("utf-8") for w in mats]
-        return words
-    else:
-        return r.lpush("mat", word)
-
-def addCalling204(word=""): 
-    if(word==""):
-        mats=r.lrange("calling204", 0, -1)
-        words=[w.decode("utf-8") for w in mats]
-        return words
-    else:
-        return r.lpush("calling204", word)
-
-def removeFromList(list, key, n=100):
-    return r.lrem(list, n, key)
 
 def start_command(update, context):
     update.message.chat.send_message("start command")
@@ -60,95 +35,30 @@ def help_command(update, context):
             /check_mongo <dbName> <tableName>\
             ")
 
+def test(update, context):
+    update.message.chat.send_message("yeah, this is a test command")
+
 def error(update, context):
     logging.error(update)
     logging.error(context.error)
     
-def kolonka(update, context):
-    update.message.chat.send_message("Postaviat!" if rnd()>=0.5 else "Net, ne postaviat.")
-
-def osuzhdau(update, context):
-  global calling204Phrases
-  osuzhdatN=0
-  try:
-    message=update.message.text.lower()
-    
-    save_conversation(r, update.message)
-
-    for m in mat:
-        if(re.match(r".*"+m.lower()+".*", message)):
-            osuzhdatN+=1
-    #print(match)
-    if(osuzhdatN!=0):
-        update.message.chat.send_message("осуждаю"+("."*osuzhdatN if osuzhdatN>0 else 1))
-    if(re.match(r".*calling204.*", message)):
-        if(len(calling204Phrases)==0):
-            calling204Phrases=addCalling204()
-            if(len(calling204Phrases)==0):
-                calling204Phrases=['Haha, man, your are the best!']
-        update.message.chat.send_message(calling204Phrases[int(rnd()*len(calling204Phrases))])#"Haha(i'm here for u)")
-        print("found help")
-  except Exception as e:
-    print('Exception occured:', e)
-
-def osuzhdat(update, context):
-    global mat
-    #print(loadMats())
-    tokens=update.message.text.split(' ')
-    if(len(tokens)==2 and tokens[1]!="-p" and tokens[1]!='-a'):
-        n=loadMats(tokens[1])
-        update.message.chat.send_message("Got it! Let's make community better together!(words : " +str(n)+ ")")
-    elif len(tokens)>2 and tokens[1]=='-p':
-        n=loadMats(" ".join(tokens[2:]).lower())
-        update.message.chat.send_message("Got your phrase, let's osuzhdat together!(" + str(n)+ ")")
-    elif len(tokens)==2 and tokens[1]=='-a':
-        update.message.chat.send_message("Osuzhdau those words:\n" + str(loadMats()))
-    else:
-        update.message.chat.send_message("Plz, i need the word u don't wanna hear/see")
-    mat=loadMats()
-
-
-def neosuzhdat(update, context):
-    global mat
-    tokens=update.message.text.split(' ')
-    if(len(tokens)==2 and tokens[1]!="-p"):
-        n=removeFromList("mat", tokens[1])
-        update.message.chat.send_message("I hope that you making a wise decision, words deleted: " +str(n)+".")
-    elif len(tokens)>2 and tokens[1]=='-p':
-        n=removeFromList("mat", " ".join(tokens[2:]))
-        update.message.chat.send_message("I know you are a brave man, hope that you making a wise decision, phrases deleted: " +str(n)+".")
-    else:
-        update.message.chat.send_message("I can't understan you, check my /help=(")
-    mat = loadMats()
-
-def tvoichlen(update, context):
-  update.message.chat.send_message("Moi chlen!" if rnd()>=0.5 else "Tvoi chlen!")
-
-def test(update, context):
-    update.message.chat.send_message("test command")
-
-def addCalling204Help(update, context):
-    global calling204Phrases
-    phrase=update.message.text.split(" ")
-    if(len(phrase)>1):
-        result=addCalling204(" ".join(phrase[1:]))
-        update.message.chat.send_message("good: "+str(result))
-        calling204Phrases=addCalling204()
-        print("addCalling204Phrases len: " + str(result))
-    else:
-        update.message.chat.send_message("Invalid args!")
-
 def main():
-    global mat
     updater=Updater(getenv("NemoBotToken"), use_context=True)
-    mat=loadMats()
+    
     db = get_client()[getenv("mongo_dbname")]
+    r=redis.Redis(getenv('redis_host'), getenv('redis_port'))
+
+    calling204Phrases=[]
+    
     dp=updater.dispatcher
 
     dp.user_data["db"] = db
     dp.user_data["callbackUrl"] = getenv("callbackUrl")
     dp.user_data["hubUrl"] = getenv("hubUrl")
     dp.user_data["tg_my_id"] = getenv("tg_my_id")
+    dp.user_data["calling204Phrases"] = set( loadList( r, context=None, listName="calling204Phrases" ) )
+    dp.user_data["r"] = r
+    dp.user_data["mat"] = set(loadList(r, context=None, listName="mat"))
 
     dp.add_handler(CommandHandler("start", start_command))
     dp.add_handler(CommandHandler("help", help_command))
