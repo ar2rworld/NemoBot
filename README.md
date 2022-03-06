@@ -27,7 +27,7 @@ python NemoBot.py
 
 ## Commands:
 
-### `/post -[li][vk][tw] <message>`
+### `/help` - to find out more commands
 
 #### Supports commands for social media posts:
 
@@ -35,7 +35,7 @@ python NemoBot.py
 
 <ul>
   <li>linkedin.com</li>
-  <li>vk.com</li>
+  <li>vk.com???</li>
   <li>twitter.com</li>
 </ul>
 

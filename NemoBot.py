@@ -14,6 +14,8 @@ from socials import post
 from send_message import send_message
 from utils.echo_commands import my_telegram_id
 from utils.echo import addEchoPhrase
+from utils.alivePhrases import addAlivePhrases
+from utils.other import pickRandomFromList
 from mongo_connection import get_client, check_mongo, addToCollection, loadCollection
 from notificator.server import runServer
 from notificator.subscribe import subscribe, subscribeToChannels
@@ -37,6 +39,7 @@ def help_command(update, context):
 /my_telegram_id
 /addCalling204Help <helping phrase>
 add \"calling204\" when joking
+/addAlivePhrases <phrase> [|,|<phrase>|,|<phrase>...]
 Admin commands:<i>
     /check_mongo <dbName> <tableName>
     /post
@@ -57,16 +60,17 @@ def main():
     r=redis.Redis(getenv('redis_host'), getenv('redis_port'))
     
     dp=updater.dispatcher
-    dp.user_data["r"] = r
-    dp.user_data["db"] = db
-    dp.user_data["callbackUrl"] = getenv("callbackUrl")
-    dp.user_data["hubUrl"] = getenv("hubUrl")
-    dp.user_data["tg_my_id"] = getenv("tg_my_id")
+    dp.user_data["r"]   = r
+    dp.user_data["db"]  = db
+    dp.user_data["callbackUrl"]       = getenv("callbackUrl")
+    dp.user_data["hubUrl"]            = getenv("hubUrl")
+    dp.user_data["tg_my_id"]          = getenv("tg_my_id")
     dp.user_data["calling204Phrases"] = set(loadList(r, context=None, listName="calling204Phrases"))
-    dp.user_data["echoPhrases"] = loadCollection(db, "echoPhrases")
-    dp.user_data["mat"] = set(loadList(r, context=None, listName="mat"))
-    dp.user_data["botChannel"] = getenv("botChannel")
-    dp.user_data["botGroup"] = getenv("botGroup")
+    dp.user_data["echoPhrases"]       = loadCollection(db, "echoPhrases")
+    dp.user_data["alivePhrases"]      = loadCollection(db, "alivePhrases") or [{"phrase" : "I am alive"}]
+    dp.user_data["mat"]               = set(loadList(r, context=None, listName="mat"))
+    dp.user_data["botChannel"]        = getenv("botChannel")
+    dp.user_data["botGroup"]          = getenv("botGroup")
 
     dp.add_handler(CommandHandler("start", start_command))
     dp.add_handler(CommandHandler("help", help_command))
@@ -82,6 +86,7 @@ def main():
     dp.add_handler(CommandHandler("check_mongo", check_mongo))
     dp.add_handler(CommandHandler("subscribeToChannels" , subscribeToChannels))
     dp.add_handler(CommandHandler("addEchoPhrase", addEchoPhrase))
+    dp.add_handler(CommandHandler("addAlivePhrases", addAlivePhrases))
     dp.add_handler(MessageHandler(Filters.update.message , echoHandler, run_async=True))
     dp.add_error_handler(error)
 
@@ -90,8 +95,8 @@ def main():
 
     # send alive messages
     dp.bot.send_message(dp.user_data["tg_my_id"], "hello comrade!")
-    dp.bot.send_message(dp.user_data["botChannel"], "I am alive!")
-    dp.bot.send_message(dp.user_data["botGroup"], "I am alive!")
+    dp.bot.send_message(dp.user_data["botChannel"], pickRandomFromList(dp.user_data["alivePhrases"])["phrase"])
+    dp.bot.send_message(dp.user_data["botGroup"], pickRandomFromList(dp.user_data["alivePhrases"])["phrase"])
 
     updater.start_polling(1)
     updater.idle()
