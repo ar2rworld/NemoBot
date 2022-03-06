@@ -56,6 +56,8 @@ mongo_dbname=mongo_dbname
 MONGO_INITDB_ROOT_USERNAME=MONGO_INITDB_ROOT_USERNAME
 MONGO_INITDB_ROOT_PASSWORD=MONGO_INITDB_ROOT_PASSWORD
 NemoBotToken=Telegram_Bot_Token
+botGroup=botGroupId
+botChannel=botGroupId
 tg_my_id=Your_Telegram_Id
 notificator_host=notificator_host
 notificator_port=notificator_port
@@ -96,13 +98,6 @@ tokens = {
             'X-Restli-Protocol-Version' : '2.0.0',
         }
     }
-}
-postgres = {
-    'dbname' : 'dbname',
-    'user' : 'user',
-    'host' : 'host',
-    'password' : 'password',
-    'port' : 'port',
 }
 ```
 

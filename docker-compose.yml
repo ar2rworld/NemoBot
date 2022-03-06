@@ -13,6 +13,8 @@ services:
       - "MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}"
       - "MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}"
       - "NemoBotToken=${NemoBotToken}"
+      - "botChannel=${botChannel}"
+      - "botGroup=${botGroup}"
       - "tg_my_id=${tg_my_id}"
       - "notificator_host=${notificator_host}"
       - "notificator_port=${notificator_port}"
