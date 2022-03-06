@@ -1,9 +1,10 @@
 from os import getenv
 
 from mongo_connection import get_client
-from access_tokens import postgres
 
-def save_conversation(r, message):
+def save_conversation(context, message):
+  r = context.dispatcher.user_data["r"]
+  db = context.dispatcher.user_data["db"]
   #check if chat id is in redis
   chat_ids = r.lrange("chat_ids", 0, -1)
   chat_id = message['chat']['id']
@@ -14,11 +15,6 @@ def save_conversation(r, message):
   if(str(chat_id).encode('ascii') not in chat_ids):
     r.lpush("chat_ids", chat_id)
     try:
-      client = get_client()
-      db = client[getenv('mongo_dbname')]
-
       db['chats'].insert_one({"chat_id": chat_id, "chat_name": chat_name})
     except Exception as e:
       print(f"Error while saving conversation info:\n{e}")
-    finally:
-      client.close()
