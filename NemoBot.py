@@ -13,7 +13,8 @@ from echoHandler import echoHandler
 from socials import post
 from send_message import send_message
 from utils.echo_commands import my_telegram_id
-from mongo_connection import get_client, check_mongo
+from utils.echo import addEchoPhrase
+from mongo_connection import get_client, check_mongo, addToCollection, loadCollection
 from notificator.server import runServer
 from notificator.subscribe import subscribe, subscribeToChannels
 
@@ -39,6 +40,7 @@ add \"calling204\" when joking
 Admin commands:<i>
     /check_mongo <dbName> <tableName>
     /post
+    /addEchoPhrase <phrase>|-|<answer>
     ''')
 
 def test(update, context):
@@ -53,25 +55,15 @@ def main():
     
     db = get_client()[getenv("mongo_dbname")]
     r=redis.Redis(getenv('redis_host'), getenv('redis_port'))
-
-    calling204Phrases=[]
-
-    echoPhrases = {
-        'слава украине' : 'Героям Слава!',
-        'слава украiнi' : 'Героям Слава!',
-        'alga' : 'Kazakhstan!',
-        'алга' : 'Казахстан!',
-        'алға' : 'Қазақстан!'
-    }
     
     dp=updater.dispatcher
+    dp.user_data["r"] = r
     dp.user_data["db"] = db
     dp.user_data["callbackUrl"] = getenv("callbackUrl")
     dp.user_data["hubUrl"] = getenv("hubUrl")
     dp.user_data["tg_my_id"] = getenv("tg_my_id")
     dp.user_data["calling204Phrases"] = set(loadList(r, context=None, listName="calling204Phrases"))
-    dp.user_data["echoPhrases"] = echoPhrases
-    dp.user_data["r"] = r
+    dp.user_data["echoPhrases"] = loadCollection(db, "echoPhrases")
     dp.user_data["mat"] = set(loadList(r, context=None, listName="mat"))
     dp.user_data["botChannel"] = getenv("botChannel")
     dp.user_data["botGroup"] = getenv("botGroup")
@@ -89,7 +81,8 @@ def main():
     dp.add_handler(CommandHandler("send_message", send_message))
     dp.add_handler(CommandHandler("check_mongo", check_mongo))
     dp.add_handler(CommandHandler("subscribeToChannels" , subscribeToChannels))
-    dp.add_handler(MessageHandler(Filters.update.message , echoHandler))
+    dp.add_handler(CommandHandler("addEchoPhrase", addEchoPhrase))
+    dp.add_handler(MessageHandler(Filters.update.message , echoHandler, run_async=True))
     dp.add_error_handler(error)
 
     _thread.start_new_thread(runServer, (dp, db, getenv('notificator_host'), getenv('notificator_port')))

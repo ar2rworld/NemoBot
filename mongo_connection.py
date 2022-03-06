@@ -23,22 +23,41 @@ def get_client():
 
 @adminOnly
 def check_mongo(update, context):
-  try:
-    tokens = update.message.text.split(' ')
-    dbname = tokens[1]
-    collection = tokens[2]
-    client = get_client()
-    db = client[dbname]
-    rows = db[collection].find()
-    count = 0
-    for i in rows:
-      update.message.chat.send_message(str(i))
-      count += 1
-    if count == 0:
-        update.message.chat.send_message("0 rows found")
+    try:
+        tokens = update.message.text.split(' ')
+        dbname = tokens[1]
+        collection = tokens[2]
+        client = get_client()
+        db = client[dbname]
+        rows = db[collection].find()
+        count = 0
+        for i in rows:
+            update.message.chat.send_message(str(i))
+            count += 1
+        if count == 0:
+            update.message.chat.send_message("0 rows found")
     
-  except Exception as e:
-    update.message.chat.send_message(str(e))
-    raise e
-  finally:
-    client.close()
+    except Exception as e:
+        update.message.chat.send_message(str(e))
+        raise e
+    finally:
+        client.close()
+
+def addToCollection(context, collection, obj, upsertKey=""):
+    db = context.dispatcher.user_data["db"]
+    try:
+        if upsertKey == "":
+            return db[collection].insert_one(obj)
+        return db[collection].update_one({upsertKey: obj[upsertKey]}, {"$set": obj}, upsert=True)
+    except Exception as e:
+        raise e
+
+def loadCollection(db, collection):
+    try:
+        result = db[collection].find()
+        r = []
+        for i in result:
+            r.append(i)
+        return r
+    except Exception as e:
+        raise e
