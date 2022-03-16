@@ -1,3 +1,4 @@
+import json
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 from os import getenv
@@ -61,3 +62,15 @@ def loadCollection(db, collection):
         return r
     except Exception as e:
         raise e
+
+@adminOnly
+def insertToMongo(update, context):
+    try:
+        tokens = update.message.text.split(' ')
+        collection = tokens[1]
+        obj = json.loads(' '.join(tokens[2:]))
+        db = context.dispatcher.user_data["db"]
+        result = db[collection].insert_one(obj)
+        update.message.chat.send_message(f"{result.acknowledged}")
+    except Exception as e:
+        update.message.chat.send_message(str(e))
