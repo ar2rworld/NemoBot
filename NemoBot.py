@@ -40,10 +40,11 @@ def help_command(update, context):
 /addCalling204Help <helping phrase>
 add \"calling204\" when joking
 /addAlivePhrases <phrase> [|,|<phrase>|,|<phrase>...]
-Admin commands:<i>
+Admin commands:
     /check_mongo <dbName> <tableName>
     /post
     /addEchoPhrase <phrase>|-|<answer>
+    /subscribeToChannels
     ''')
 
 def test(update, context):
