@@ -70,7 +70,7 @@ redis_volume_path=redis_volume_path
 
 ### Command
 ```bash
-docker-compose --env-file .env up
+docker-compose --env-file .env up --remove-orphans -d
 ```
 
 ### Example of `access_tokens.py`
