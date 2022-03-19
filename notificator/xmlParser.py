@@ -4,6 +4,7 @@ import logging
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.INFO)
 handler = logging.FileHandler("xmlBody.log", 'w', 'utf-8')
+handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
 root_logger.addHandler(handler)
 
 def xmlParser(file, content_length):
