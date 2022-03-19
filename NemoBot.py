@@ -55,6 +55,12 @@ def error(update, context):
     logging.error(context.error)
     
 def main():
+    xmlParserLogger = logging.getLogger("xmlParser")
+    xmlParserLogger.setLevel(logging.INFO)
+    xmlParserHandler = logging.FileHandler("xmlBodyLocal.log", "a", "utf-8")
+    xmlParserHandler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
+    xmlParserLogger.addHandler(xmlParserHandler)
+
     updater=Updater(getenv("NemoBotToken"), use_context=True)
     
     db = get_client()[getenv("mongo_dbname")]
