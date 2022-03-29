@@ -79,6 +79,7 @@ def main():
     dp.user_data["callbackUrl"]       = getenv("callbackUrl")
     dp.user_data["hubUrl"]            = getenv("hubUrl")
     dp.user_data["tg_my_id"]          = getenv("tg_my_id")
+    dp.user_data["adminId"]           = getenv("tg_my_id")
     dp.user_data["calling204Phrases"] = set(loadList(r, context=None, listName="calling204Phrases"))
     dp.user_data["echoPhrases"]       = loadCollection(db, "echoPhrases")
     dp.user_data["alivePhrases"]      = loadCollection(db, "alivePhrases") or [{"phrase" : "I am alive"}]

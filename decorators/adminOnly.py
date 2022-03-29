@@ -1,10 +1,15 @@
-from os import getenv
-
 def adminOnly(func):
     def inner(update, x):
-        if str(update.message.chat.id) == getenv('tg_my_id'):
+        userId = str(update.message.from_user.id)
+        user_data = x.dispatcher.user_data
+        if userId == user_data['adminId']:
             return func(update, x)
         else:
-            update.message.chat.send_message("you not authorized to use this command")
-
+            db = x.dispatcher.user_data['db']
+            user = db.authorizedUsers.find_one({"tg_id" : userId})
+            funcName = func.__name__
+            if user and funcName in user['authorizedCommands']:
+                return func(update, x)
+            else:
+                update.message.chat.send_message("you not authorized to use this command")
     return inner
