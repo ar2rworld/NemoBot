@@ -61,6 +61,12 @@ def main():
     xmlParserHandler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
     xmlParserLogger.addHandler(xmlParserHandler)
 
+    errorLogger = logging.getLogger("errorLogger")
+    errorLogger.setLevel(logging.ERROR)
+    errorLoggerHandler = logging.FileHandler("error.log", "a", "utf-8")
+    errorLoggerHandler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
+    errorLogger.addHandler(errorLoggerHandler)
+
     updater=Updater(getenv("NemoBotToken"), use_context=True)
     
     db = get_client()[getenv("mongo_dbname")]
@@ -69,6 +75,7 @@ def main():
     dp=updater.dispatcher
     dp.user_data["r"]   = r
     dp.user_data["db"]  = db
+    dp.user_data["errorLogger"]       = errorLogger
     dp.user_data["callbackUrl"]       = getenv("callbackUrl")
     dp.user_data["hubUrl"]            = getenv("hubUrl")
     dp.user_data["tg_my_id"]          = getenv("tg_my_id")

@@ -9,14 +9,17 @@ def kolonka(update, context):
 
 def osuzhdau(update, context):
     calling204Phrases = context.dispatcher.user_data["calling204Phrases"]
-    r = context.dispatcher.user_data["r"]
     mat = context.dispatcher.user_data["mat"]
+    errorLogger = context.dispatcher.user_data["errorLogger"]
     osuzhdatN=0
     try:
         message=update.message.text.lower()
         for m in mat:
-            if(re.match(r".*"+m.lower()+".*", message)):
-                osuzhdatN+=1
+            try:
+                if(re.match(r".*"+str(m).lower()+".*", message)):
+                    osuzhdatN+=1
+            except Exception as e:
+                errorLogger.error(e)
 
         if(osuzhdatN!=0):
             update.message.chat.send_message("осуждаю"+("."*osuzhdatN if osuzhdatN>0 else 1))
