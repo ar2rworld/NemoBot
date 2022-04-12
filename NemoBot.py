@@ -67,6 +67,11 @@ def main():
     errorLoggerHandler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
     errorLogger.addHandler(errorLoggerHandler)
 
+    serverLogger = logging.getLogger("serverLogger")
+    serverLoggerHandler = logging.FileHandler("server.log", "a", "utf-8")
+    serverLoggerHandler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
+    serverLogger.addHandler(serverLoggerHandler)
+
     updater=Updater(getenv("NemoBotToken"), use_context=True)
     
     db = get_client()[getenv("mongo_dbname")]
