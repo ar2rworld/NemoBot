@@ -9,3 +9,5 @@ def echoHandler(update, context):
     save_conversation(context, update.message)
 
     osuzhdau(update, context)
+    for func in context.dispatcher.user_data["echoHandlers"]:
+        func(update, context)

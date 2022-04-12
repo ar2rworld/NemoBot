@@ -64,13 +64,16 @@ def loadCollection(db, collection):
         raise e
 
 @adminOnly
-def insertToMongo(update, context):
+def upsertToMongo(update, context):
     try:
         tokens = update.message.text.split(' ')
         collection = tokens[1]
-        obj = json.loads(' '.join(tokens[2:]))
+        message = ' '.join(tokens[2:])
+        subTokens = message.split('|-|')
+        filter = json.loads(subTokens[0])
+        obj = json.loads(subTokens[1])
         db = context.dispatcher.user_data["db"]
-        result = db[collection].insert_one(obj)
+        result = db[collection].update_one(filter, obj, upsert=True)
         update.message.chat.send_message(f"{result.acknowledged}")
     except Exception as e:
         update.message.chat.send_message(str(e))
