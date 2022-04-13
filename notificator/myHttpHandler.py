@@ -3,10 +3,13 @@ from os import getenv
 import json
 import socketserver
 from typing import Tuple
+import logging
 
 from notificator.send_notifications import send_notifications
 from notificator.xmlParser import xmlParser
 from utils.parseUrl import parseUrl
+
+serverLogger = logging.getLogger("serverLogger")
 
 class Handler(BaseHTTPRequestHandler):
   def __init__(self, request: bytes, client_address: Tuple[str, int], server: socketserver.BaseServer) -> None:
@@ -20,7 +23,7 @@ class Handler(BaseHTTPRequestHandler):
       self.send_response(200)
       self.end_headers()
     except Exception as e:
-      print(e)
+      serverLogger.error(e)
       self.send_error(404, 'Error: %s' % e)
 
   def do_GET(self):
@@ -49,5 +52,5 @@ class Handler(BaseHTTPRequestHandler):
           self.send_response(404)
           self.end_headers()
     except Exception as e:
-      print(e)
+      serverLogger.error(e)
       self.send_error(404, f'Error: {e}')

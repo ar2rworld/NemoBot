@@ -76,6 +76,11 @@ def main():
     mainLoggerHandler = logging.FileHandler("main.log", "a", "utf-8")
     mainLoggerHandler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
     mainLogger.addHandler(mainLoggerHandler)
+    
+    serverLogger = logging.getLogger("serverLogger")
+    serverLoggerHandler = logging.FileHandler("server.log", "a", "utf-8")
+    serverLoggerHandler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
+    serverLogger.addHandler(serverLoggerHandler)
 
     updater=Updater(getenv("NemoBotToken"), use_context=True)
     
