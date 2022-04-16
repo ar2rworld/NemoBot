@@ -2,25 +2,29 @@ import json
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 from os import getenv
+import logging
 
 from decorators.adminOnly import adminOnly
 from access_tokens import mongo
 
 def get_client():
-  connection_string = f'mongodb://{getenv("mongo_host")}:{getenv("mongo_port")}'
-  client = MongoClient(
-    connection_string,
-    username=getenv('MONGO_INITDB_ROOT_USERNAME'),
-    password=getenv('MONGO_INITDB_ROOT_PASSWORD'))
-  try:
-    if client[getenv("mongo_dbname")].command('ping'):
-      print("mongo connected")
-      return client
-    else:
-      raise Exception('mongo didnot PONG back :/')
-      
-  except ConnectionFailure as e:
-    raise ConnectionFailure
+    errorLogger = logging.getLogger("errorLogger")
+    connection_string = f'mongodb://{getenv("mongo_host")}:{getenv("mongo_port")}'
+    try:
+        client = MongoClient(
+            connection_string,
+            username=getenv('MONGO_INITDB_ROOT_USERNAME'),
+            password=getenv('MONGO_INITDB_ROOT_PASSWORD'))
+    
+        if client[getenv("mongo_dbname")].command('ping'):
+            return client
+        else:
+            raise Exception('mongo didnot PONG back :/')
+    except ConnectionFailure as e:
+        raise ConnectionFailure
+    except Exception as e:
+        errorLogger.error(e)
+        raise e
 
 @adminOnly
 def checkMongo(update, context):
