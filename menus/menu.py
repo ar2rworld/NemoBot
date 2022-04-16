@@ -6,7 +6,7 @@ from telegram.ext import Dispatcher, CallbackContext, CommandHandler
 from pymongo.database import Database
 
 class Menu:
-    def __init__(self, name : str, command : str, dispatcher : Dispatcher, db : Database, echoHandlers : List[Callable[[Update, CallbackContext], None]]) -> None:
+    def __init__(self, name : str, command : str, dispatcher : Dispatcher, db : Database) -> None:
         if "_" in name:
             raise Exception(f"Menu name cannot contain \"_\", name: \"{name}\"")
         self.screens = {}
@@ -19,7 +19,6 @@ class Menu:
             raise Exception(f"Empty command or command contains spaces: \"{command}\"")
         self.command = command
         self.db = db
-        self.echoHandlers = echoHandlers
         self.callback : Callable[[Update, CallbackContext], None] = self.createCallback()
     def addScreenObj(self, screenObj : dict) -> None:
         screenObj["menuName"] = self.name
@@ -93,11 +92,9 @@ class Menu:
             menu.renderScreen(update.callback_query.from_user.id, self.firstScreenName)
         self.dispatcher.user_data["callbackQueryHandlers"]["firstScreenButton_" + self.name] = firstScreenButton
 
-        for handler in self.echoHandlers:
-            self.dispatcher.user_data["echoHandlers"].append(handler)
-
         self.dispatcher.user_data[self.name] = self
         print(f"Built {self.name}")
+        return self
     def renderFirstScreen(self, chatId) -> None:
         self.renderScreen(chatId, self.firstScreenName)
 

@@ -7,7 +7,7 @@ import redis
 import _thread
 import logging
 from decorators.adminOnly import adminOnly
-from menus.menu import Menu, findMenuInContext
+from menus.menu import findMenuInContext
 
 #local functions
 from room204 import addCalling204Help, loadList, kolonka, tvoichlen, osuzhdat, neosuzhdat
@@ -21,8 +21,7 @@ from utils.other import pickRandomFromList
 from mongo_connection import get_client, checkMongo, addToCollection, loadCollection, upsertToMongo
 from notificator.server import runServer
 from notificator.subscribe import subscribe, subscribeToChannels
-
-print("Starting...")
+from requestAccessMenu import createRequestAccessMenu
 
 def start_command(update, context):
     update.message.chat.send_message("start command")
@@ -76,7 +75,9 @@ def main():
     mainLoggerHandler = logging.FileHandler("main.log", "a", "utf-8")
     mainLoggerHandler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
     mainLogger.addHandler(mainLoggerHandler)
-    
+
+    mainLogger.info("Starting...")
+
     serverLogger = logging.getLogger("serverLogger")
     serverLoggerHandler = logging.FileHandler("server.log", "a", "utf-8")
     serverLoggerHandler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
@@ -112,69 +113,9 @@ def main():
     dp.user_data["botChannel"]            = getenv("botChannel")
     dp.user_data["botGroup"]              = getenv("botGroup")
     dp.user_data["callbackQueryHandlers"] = {}
-    dp.user_data["echoHandlers"]       = []
+    dp.user_data["echoHandlers"]          = {}
 
-    def userInputEchoHandler(update : Update, context : CallbackContext):
-            user_data = context.dispatcher.user_data
-            userInput = update.message.text
-            context.dispatcher.user_data["echoHandlers"].remove(userInputEchoHandler)
-            db = user_data["db"]
-            userId = update.message.from_user.id
-            menuObj = db.userInput.find_one({ "userId" : userId })
-            if not menuObj:
-                return
-            menu = user_data[menuObj["menuName"]]
-            db.userInput.update_one({ "userId" : userId }, { "$set" : { "userInput" : userInput, "status" : 1 } }, upsert=True)
-            menu.renderScreen(userId, "thankYouScreen")
-            
-    menu = Menu("requestAccess", command="requestAccess", dispatcher=dp, db=db, echoHandlers=[userInputEchoHandler])
-    def authorizeAddEchoPhrase(update, context):
-        user_data = context.dispatcher.user_data
-        menu = user_data["findMenuInContext"](update, context)
-        menu.renderScreen(update.callback_query.from_user.id, "reasonScreen")
-    def upsertToMongoCallbackQuery(update, context):
-        user_data = context.dispatcher.user_data
-        menu = user_data["findMenuInContext"](update, context)
-        menu.renderScreen(update.callback_query.from_user.id, "reasonScreen")
-    def checkMongoCallbackQuery(update, context):
-        user_data = context.dispatcher.user_data
-        menu = user_data["findMenuInContext"](update, context)
-        context.dispatcher.user_data["echoHandlers"].append(userInputEchoHandler)
-        menuName = menu.renderScreen(update.callback_query.from_user.id, "reasonScreen")
-        db = user_data["db"]
-        db.userInput.update_one({ "userId" : update.callback_query.from_user.id },
-            { "$set" : { "menuName" : menuName, "status" : 0 }},
-            upsert=True)
-    menu.addScreenObj({"text" : "Choose command to request access:",
-                    "name" : "firstScreen",
-                    "rows" : [
-                        [
-                            {"text" : "addEchoPhrase", "callbackData" : "addEchoPhraseCallbackQuery",
-                            "callbackFunction" : authorizeAddEchoPhrase},
-                            {"text" : "check_mongo", "callbackData" : "checkMongoCallbackQuery",
-                            "callbackFunction" : checkMongoCallbackQuery}
-                        ],
-                        [
-                            {"text" : "upsertToMongo", "callbackData" : "upsertToMongo",
-                            "callbackFunction" : upsertToMongoCallbackQuery}
-                        ]
-                    ]})
-    menu.addScreenObj({"text" : "Second screen",
-                    "name" : "secondScreen",
-                    "rows" : [
-                        [{"text" : "one button", "callbackData" : "addEchoPhraseCallbackQuery",
-                        "callbackFunction" : authorizeAddEchoPhrase}],
-                    ]})
-    menu.addScreenObj({"text" : "Thank you for your request",
-                    "name" : "thankYouScreen"})
-    menu.addScreenObj({"text" : "Invalid input(empty)",
-                    "name" : "emptyInputScreen"})
-    menu.addScreenObj({"text" : "Why would you need this command?",
-                    "name" : "reasonScreen",
-                    "callback" : "reasonScren"})
-                    #                    
-    # TODO: add entering text functionality to the menu ^
-    menu.build()
+    menu = createRequestAccessMenu(dp, db)
 
     dp.user_data[menu.name] = menu
     dp.user_data["findMenuInContext"] = findMenuInContext
@@ -195,7 +136,6 @@ def main():
     dp.add_handler(CommandHandler("subscribeToChannels" , subscribeToChannels))
     dp.add_handler(CommandHandler("addEchoPhrase", addEchoPhrase))
     dp.add_handler(CommandHandler("addAlivePhrases", addAlivePhrases))
-    #dp.add_handler(CommandHandler("requestAccess", requestAccess))
     dp.add_handler(MessageHandler(Filters.update.message , echoHandler, run_async=True))
     
     def callbackQueryHandler(update, context):
@@ -223,6 +163,7 @@ def main():
         dp.bot.send_message(dp.user_data["botChannel"], channelPost)
         dp.bot.send_message(dp.user_data["botGroup"], phrase)
 
+    mainLogger.info("Started")
     updater.start_polling(1)
     updater.idle()
 
