@@ -18,7 +18,7 @@ from utils.echo_commands import my_telegram_id
 from utils.echo import addEchoPhrase
 from utils.alivePhrases import addAlivePhrases
 from utils.other import pickRandomFromList
-from mongo_connection import get_client, check_mongo, addToCollection, loadCollection, upsertToMongo
+from mongo_connection import get_client, checkMongo, addToCollection, loadCollection, upsertToMongo
 from notificator.server import runServer
 from notificator.subscribe import subscribe, subscribeToChannels
 
@@ -41,7 +41,7 @@ def help_command(update, context):
 add \"calling204\" when joking
 /addAlivePhrases <phrase> [|,|<phrase>|,|<phrase>...]
 Admin commands:
-    /check_mongo <dbName> <tableName>
+    /checkMongo <dbName> <tableName>
     /upsertToMongo <tableName> <json>
     /post
     /addEchoPhrase <phrase>|-|<answer>
@@ -190,7 +190,7 @@ def main():
     dp.add_handler(CommandHandler("test", test))
     dp.add_handler(CommandHandler("post", post))
     dp.add_handler(CommandHandler("send_message", send_message))
-    dp.add_handler(CommandHandler("check_mongo", check_mongo))
+    dp.add_handler(CommandHandler("checkMongo", checkMongo))
     dp.add_handler(CommandHandler("upsertToMongo", upsertToMongo))
     dp.add_handler(CommandHandler("subscribeToChannels" , subscribeToChannels))
     dp.add_handler(CommandHandler("addEchoPhrase", addEchoPhrase))

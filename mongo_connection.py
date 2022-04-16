@@ -23,7 +23,7 @@ def get_client():
     raise ConnectionFailure
 
 @adminOnly
-def check_mongo(update, context):
+def checkMongo(update, context):
     try:
         tokens = update.message.text.split(' ')
         dbname = tokens[1]
