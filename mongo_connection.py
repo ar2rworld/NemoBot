@@ -1,5 +1,6 @@
 import json
 from pymongo import MongoClient
+from pymongo.database import Database
 from pymongo.errors import ConnectionFailure
 from os import getenv
 import logging
@@ -81,3 +82,50 @@ def upsertToMongo(update, context):
         update.message.chat.send_message(f"{result.acknowledged}")
     except Exception as e:
         update.message.chat.send_message(str(e))
+
+@adminOnly
+def accessMongo(update, context):
+    # /mongo action collectionName json
+    try:
+        db : Database = context.dispatcher.user_data["db"]
+        message = update.message.text.replace("/accessMongo ", "")    
+        chat = update.message.chat
+        if message == "showTables":
+            result = db.list_collection_names()
+            chat.send_message(f"{result}")
+            return
+        tokens = message.split(" ")
+        if len(tokens) < 2:
+            raise Exception("Not enough arguments")
+        action = tokens[0]
+        collection = tokens[1]
+        if action == 'insert':
+            obj = json.loads(' '.join(tokens[2:]))
+            result = db[collection].insert_one(obj)
+            chat.send_message(f"{result.acknowledged}")
+        elif action == 'find':
+            result = None
+            if len(tokens) > 2:
+                filter = json.loads(' '.join(tokens[2:]))
+                result = db[collection].find(filter)
+            else:
+                result = db[collection].find()
+            c = 0
+            output = ""
+            for row in result:
+                output += str(row) + "\n"
+                c += 1
+            chat.send_message(f"{output}{c} rows found")
+        elif action == 'update':
+            objects = ' '.join(tokens[2:]).split("|-|")
+            filter = json.loads(objects[0])
+            obj = json.loads(objects[1])
+            result = db[collection].update_one(filter, obj)
+            chat.send_message(f"{result.acknowledged}")
+        elif action == 'delete':
+            filter = json.loads(' '.join(tokens[2:]))
+            result = db[collection].delete_one(filter)
+            chat.send_message(f"{result.acknowledged}")
+    except Exception as e:
+        update.message.chat.send_message(str(e))
+        raise e

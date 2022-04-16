@@ -18,7 +18,7 @@ from utils.echo_commands import my_telegram_id
 from utils.echo import addEchoPhrase
 from utils.alivePhrases import addAlivePhrases
 from utils.other import pickRandomFromList
-from mongo_connection import get_client, checkMongo, addToCollection, loadCollection, upsertToMongo
+from mongo_connection import accessMongo, get_client, checkMongo, addToCollection, loadCollection, upsertToMongo
 from notificator.server import runServer
 from notificator.subscribe import subscribe, subscribeToChannels
 from requestAccessMenu import createRequestAccessMenu
@@ -45,6 +45,7 @@ Admin commands:
     /post
     /addEchoPhrase <phrase>|-|<answer>
     /subscribeToChannels
+    /accessMongo [showTables] <insert|find|update|delete> <collectionName> [filter|<filter|-|json>]
     ''')
 
 def test(update, context):
@@ -131,6 +132,7 @@ def main():
     dp.add_handler(CommandHandler("test", test))
     dp.add_handler(CommandHandler("post", post))
     dp.add_handler(CommandHandler("send_message", send_message))
+    dp.add_handler(CommandHandler("accessMongo", accessMongo))
     dp.add_handler(CommandHandler("checkMongo", checkMongo))
     dp.add_handler(CommandHandler("upsertToMongo", upsertToMongo))
     dp.add_handler(CommandHandler("subscribeToChannels" , subscribeToChannels))
