@@ -44,7 +44,7 @@ class Menu:
         def callback(update : Update, context : CallbackContext) -> None:
             db = self.db
             if len(self.screens.keys()) == 0:
-                raise Exception(f"0 Screens is menu")
+                raise Exception(f"0 Screens in menu")
             userId = update.message.from_user.id
             screen = self.screens[self.firstScreenName]
             userMenu = db.userMenus.find_one({"userId": userId})
@@ -72,7 +72,7 @@ class Menu:
         return self.name
     def build(self):
         # setup all handlers and callbacks
-        print(f"Building {self.name}")
+        self.dispatcher.user_data["mainLogger"].info(f"Building {self.name}")
         self.dispatcher.add_handler(CommandHandler(self.command, self.callback))
         # check if at least one screen exists
         if len(self.screens) == 0:
@@ -93,7 +93,7 @@ class Menu:
         self.dispatcher.user_data["callbackQueryHandlers"]["firstScreenButton_" + self.name] = firstScreenButton
 
         self.dispatcher.user_data[self.name] = self
-        print(f"Built {self.name}")
+        self.dispatcher.user_data["mainLogger"].info(f"Built {self.name}")
         return self
     def renderFirstScreen(self, chatId) -> None:
         self.renderScreen(chatId, self.firstScreenName)

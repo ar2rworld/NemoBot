@@ -23,8 +23,15 @@ def userInputEchoHandler(update : Update, context : CallbackContext):
             return
         if not menuObj:
             errorLogger.error(f"Cannot find userId {userId} in userInput")
+        user = update.message.from_user
+        userObj = { "link" : user.link, "name" : user.name,
+            "fullName" : user.full_name, "username" : user.username}
+        db.users.update_one({ "userId" : userId },
+            { "$set" : userObj }, upsert=True)
         db.requestedCommands.update_one({ "userId" : userId, "requestedCommand" : requestedCommand },
             { "$set" : { "userInput" : userInput, "status" : 1 } }, upsert=True)
+        context.dispatcher.bot.send_message(user_data["adminId"],
+            f"User {userId},{user.full_name},{user.username} requested {requestedCommand} with input:\n{userInput}")
         menu.renderScreen(userId, "thankYouScreen")
 def authorizeAddEchoPhrase(update, context):
     user_data = context.dispatcher.user_data
@@ -57,7 +64,7 @@ def checkMongoCallbackQuery(update, context):
         { "$set" : { "menuName" : menuName, "status" : 0, "requestedCommand" : "checkMongo" }},
         upsert=True)
 
-def createRequestAccessMenu(dp : Dispatcher, db : Database):
+def setupRequestAccessMenu(dp : Dispatcher, db : Database):
     menu = Menu("requestAccess", command="requestAccess", dispatcher=dp, db=db)
     menu.addScreenObj({"text" : "Choose command to request access:",
                     "name" : "firstScreen",
@@ -87,5 +94,8 @@ def createRequestAccessMenu(dp : Dispatcher, db : Database):
                     "name" : "reasonScreen",
                     "callback" : "reasonScren"})
 
+    # TODO: make less dependent menus on context
     # TODO: future development: add renderScreen(..., arguments) -> Button(text+arguments.button1)
+    # TODO: send messages to admin if requested command
+    # TODO: add dynamic buttons feature addDynamicScreen()
     return menu.build()

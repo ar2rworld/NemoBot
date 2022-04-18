@@ -8,6 +8,7 @@ import _thread
 import logging
 from decorators.adminOnly import adminOnly
 from menus.menu import findMenuInContext
+from requestsViewMenu import setupRequestsViewMenu
 
 #local functions
 from room204 import addCalling204Help, loadList, kolonka, tvoichlen, osuzhdat, neosuzhdat
@@ -21,7 +22,7 @@ from utils.other import pickRandomFromList
 from mongo_connection import accessMongo, get_client, checkMongo, addToCollection, loadCollection, upsertToMongo
 from notificator.server import runServer
 from notificator.subscribe import subscribe, subscribeToChannels
-from requestAccessMenu import createRequestAccessMenu
+from requestAccessMenu import setupRequestAccessMenu
 
 def start_command(update, context):
     update.message.chat.send_message("start command")
@@ -116,9 +117,9 @@ def main():
     dp.user_data["callbackQueryHandlers"] = {}
     dp.user_data["echoHandlers"]          = {}
 
-    menu = createRequestAccessMenu(dp, db)
+    menu = setupRequestAccessMenu(dp, db)
+    #setupRequestsViewMenu(dp, db)
 
-    dp.user_data[menu.name] = menu
     dp.user_data["findMenuInContext"] = findMenuInContext
 
     dp.add_handler(CommandHandler("start", start_command))
@@ -170,3 +171,5 @@ def main():
     updater.idle()
 
 main()
+
+# TODO write some tests for handlers
