@@ -30,7 +30,8 @@ class Handler(BaseHTTPRequestHandler):
     try:
       self.server.telegramDispatcher.bot.send_message(
         getenv('tg_my_id'),
-        f"I got a message from {self.client_address}(might be important):\n{self.requestline}"
+        f"I got a message from {self.client_address}(might be important):\n{self.requestline}",
+        disable_notification=True
       )
       if "?" in self.requestline:
         temp = self.requestline.split("?")[1]
