@@ -1,5 +1,6 @@
 .env
 access_tokens.py
+*LOCAL.py
 __pycache__
 1.html
 2.html
