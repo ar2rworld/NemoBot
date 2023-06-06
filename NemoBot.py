@@ -1,7 +1,8 @@
+import asyncio
 import subprocess
 from os import getenv
 from telegram import KeyboardButton, ReplyKeyboardMarkup, Update, Bot
-from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackQueryHandler, CallbackContext, filters
+from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, CallbackContext, filters
 import redis
 import _thread
 import logging
@@ -85,7 +86,7 @@ def main():
     serverLoggerHandler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
     serverLogger.addHandler(serverLoggerHandler)
 
-    updater=Updater(Bot(getenv("NemoBotToken")))
+    app = Application.builder().token(getenv("NemoBotToken")).build()
     
     db = get_client()[getenv("mongo_dbname")]
 
@@ -101,49 +102,48 @@ def main():
             errorLogger.error(e)
             mainLogger.error("Redis is not ready")
             raise e
-    
-    dp=updater.dispatcher
-    dp.user_data["r"]   = r
-    dp.user_data["db"]  = db
-    dp.user_data["mainLogger"]            = mainLogger
-    dp.user_data["errorLogger"]           = errorLogger
-    dp.user_data["findMenuInContext"]     = findMenuInContext
-    dp.user_data["callbackUrl"]           = getenv("callbackUrl")
-    dp.user_data["hubUrl"]                = getenv("hubUrl")
-    dp.user_data["tg_my_id"]              = getenv("tg_my_id")
-    dp.user_data["adminId"]               = getenv("tg_my_id")
-    dp.user_data["calling204Phrases"]     = set(loadList(r, context=None, listName="calling204Phrases"))
-    dp.user_data["echoPhrases"]           = loadCollection(db, "echoPhrases")
-    dp.user_data["alivePhrases"]          = loadCollection(db, "alivePhrases") or [{"phrase" : "I am alive"}]
-    dp.user_data["mat"]                   = set(loadList(r, context=None, listName="mat"))
-    dp.user_data["botChannel"]            = getenv("botChannel")
-    dp.user_data["botGroup"]              = getenv("botGroup")
-    dp.user_data["callbackQueryHandlers"] = {}
-    dp.user_data["echoHandlers"]          = {}
 
-    menu = setupRequestAccessMenu(dp, db)
-    #setupRequestsViewMenu(dp, db)
+    app.user_data["r"]   = r
+    app.user_data["db"]  = db
+    app.user_data["mainLogger"]            = mainLogger
+    app.user_data["errorLogger"]           = errorLogger
+    app.user_data["findMenuInContext"]     = findMenuInContext
+    app.user_data["callbackUrl"]           = getenv("callbackUrl")
+    app.user_data["hubUrl"]                = getenv("hubUrl")
+    app.user_data["tg_my_id"]              = getenv("tg_my_id")
+    app.user_data["adminId"]               = getenv("tg_my_id")
+    app.user_data["calling204Phrases"]     = set(loadList(r, context=None, listName="calling204Phrases"))
+    app.user_data["echoPhrases"]           = loadCollection(db, "echoPhrases")
+    app.user_data["alivePhrases"]          = loadCollection(db, "alivePhrases") or [{"phrase" : "I am alive"}]
+    app.user_data["mat"]                   = set(loadList(r, context=None, listName="mat"))
+    app.user_data["botChannel"]            = getenv("botChannel")
+    app.user_data["botGroup"]              = getenv("botGroup")
+    app.user_data["callbackQueryHandlers"] = {}
+    app.user_data["echoHandlers"]          = {}
 
-    dp.user_data["findMenuInContext"] = findMenuInContext
+    menu = setupRequestAccessMenu(app, db)
+    #setupRequestsViewMenu(app, db)
 
-    dp.add_handler(CommandHandler("start", start_command))
-    dp.add_handler(CommandHandler("help", help_command))
-    dp.add_handler(CommandHandler("postaviat", kolonka))
-    dp.add_handler(CommandHandler("tvoichlen", tvoichlen))
-    dp.add_handler(CommandHandler("osuzhdat", osuzhdat))
-    dp.add_handler(CommandHandler("neosuzhdat", neosuzhdat))
-    dp.add_handler(CommandHandler("my_telegram_id", my_telegram_id))
-    dp.add_handler(CommandHandler("addCalling204Help", addCalling204Help))
-    dp.add_handler(CommandHandler("test", test))
-    dp.add_handler(CommandHandler("post", post))
-    dp.add_handler(CommandHandler("send_message", send_message))
-    dp.add_handler(CommandHandler("accessMongo", accessMongo))
-    dp.add_handler(CommandHandler("checkMongo", checkMongo))
-    dp.add_handler(CommandHandler("upsertToMongo", upsertToMongo))
-    dp.add_handler(CommandHandler("subscribeToChannels" , subscribeToChannels))
-    dp.add_handler(CommandHandler("addEchoPhrase", addEchoPhrase))
-    dp.add_handler(CommandHandler("addAlivePhrases", addAlivePhrases))
-    dp.add_handler(MessageHandler(filters.update.message , echoHandler, run_async=True))
+    app.user_data["findMenuInContext"] = findMenuInContext
+
+    app.add_handler(CommandHandler("start", start_command))
+    app.add_handler(CommandHandler("help", help_command))
+    app.add_handler(CommandHandler("postaviat", kolonka))
+    app.add_handler(CommandHandler("tvoichlen", tvoichlen))
+    app.add_handler(CommandHandler("osuzhdat", osuzhdat))
+    app.add_handler(CommandHandler("neosuzhdat", neosuzhdat))
+    app.add_handler(CommandHandler("my_telegram_id", my_telegram_id))
+    app.add_handler(CommandHandler("addCalling204Help", addCalling204Help))
+    app.add_handler(CommandHandler("test", test))
+    app.add_handler(CommandHandler("post", post))
+    app.add_handler(CommandHandler("send_message", send_message))
+    app.add_handler(CommandHandler("accessMongo", accessMongo))
+    app.add_handler(CommandHandler("checkMongo", checkMongo))
+    app.add_handler(CommandHandler("upsertToMongo", upsertToMongo))
+    app.add_handler(CommandHandler("subscribeToChannels" , subscribeToChannels))
+    app.add_handler(CommandHandler("addEchoPhrase", addEchoPhrase))
+    app.add_handler(CommandHandler("addAlivePhrases", addAlivePhrases))
+    app.add_handler(MessageHandler(filters.update.message , echoHandler, run_async=True))
     
     def callbackQueryHandler(update, context):
         func = context.dispatcher.user_data["callbackQueryHandlers"][update.callback_query.data]
@@ -151,24 +151,24 @@ def main():
             raise Exception(f"Callback query handler: \"{update.callback_query.data}\" not found")
         func(update, context)
 
-    dp.add_handler(CallbackQueryHandler(callbackQueryHandler))
-    dp.add_error_handler(error)
+    app.add_handler(CallbackQueryHandler(callbackQueryHandler))
+    app.add_error_handler(error)
 
-    _thread.start_new_thread(runServer, (dp, db, getenv('notificator_host'), getenv('notificator_port')))
-    dp.job_queue.run_repeating(lambda x: subscribe(dp), 86400, first=1)
+    _thread.start_new_thread(runServer, (app, db, getenv('notificator_host'), getenv('notificator_port')))
+    app.job_queue.run_repeating(lambda x: subscribe(app), 86400, first=1)
 
     # send alive messages
-    dp.bot.send_message(dp.user_data["tg_my_id"], "hello comrade!",reply_markup=ReplyKeyboardMarkup([
+    app.bot.send_message(app.user_data["tg_my_id"], "hello comrade!",reply_markup=ReplyKeyboardMarkup([
         [KeyboardButton("/help")],
         [KeyboardButton("/requestAccess")]
     ]))
     if not getenv("DEBUG"):
         commits = subprocess.check_output(["git", "log"]).decode("utf-8")
         lastCommit = commits[commits.find('Author',1) : commits.find('commit', 1)].replace("\n", "")
-        phrase = pickRandomFromList(dp.user_data["alivePhrases"])["phrase"]
+        phrase = pickRandomFromList(app.user_data["alivePhrases"])["phrase"]
         channelPost = f'{lastCommit}\n{phrase}'
-        dp.bot.send_message(dp.user_data["botChannel"], channelPost)
-        dp.bot.send_message(dp.user_data["botGroup"], phrase)
+        app.bot.send_message(app.user_data["botChannel"], channelPost)
+        app.bot.send_message(app.user_data["botGroup"], phrase)
 
     mainLogger.info("Started")
     updater.start_polling(1)
