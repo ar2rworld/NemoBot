@@ -10,13 +10,13 @@ class TestInmemoryRedis(unittest.TestCase):
     self.assertEqual(pong, True)
     
     testListWithOneItem = inr.lpush("testList", "item1")
-    self.assertEqual(testListWithOneItem, ["item1"])
+    self.assertEqual(testListWithOneItem, 1)
 
     testListWithTwoItems = inr.lpush("testList", "item2")
-    self.assertEqual(testListWithTwoItems, ["item1", "item2"])
+    self.assertEqual(testListWithTwoItems, 2)
     
     testListWithThreeItems = inr.lpush("testList", "item3")
-    self.assertEqual(testListWithThreeItems, ["item1", "item2", "item3"])
+    self.assertEqual(testListWithThreeItems, 3)
 
     testLrangeOfTwoItems = inr.lrange("testList", 0, 1)
     self.assertEqual(testLrangeOfTwoItems, ["item1", "item2"])
@@ -25,7 +25,7 @@ class TestInmemoryRedis(unittest.TestCase):
     self.assertEqual(testLrangeOfThreeItems, ["item1", "item2", "item3"])
 
     testPushDuplicate = inr.lpush("testList", "item2")
-    self.assertEqual(testPushDuplicate, ["item1", "item2", "item3", "item2"])
+    self.assertEqual(testPushDuplicate, 4)
 
     testRem = inr.lrem("testList", 2, "item2")
     testList = inr.lrange("testList", 0, -1)

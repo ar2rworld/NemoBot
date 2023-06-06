@@ -15,9 +15,9 @@ class InmemoryRedis:
     def lpush(self, listName: str, item: str) -> List[str]:
         if not self.dict.get(listName, []):
             self.dict[listName] = [item]
-            return self.dict[listName]
+            return len(self.dict[listName])
         self.dict[listName].append(item)
-        return self.dict[listName]
+        return len(self.dict[listName])
     def lrem(self, listName: str, nKeysToDelete: int, item: str) -> int:
         i = 0
         for key in self.dict.get(listName, []):
