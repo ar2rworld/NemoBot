@@ -8,6 +8,7 @@ import _thread
 import logging
 from decorators.adminOnly import adminOnly
 from menus.menu import findMenuInContext
+from myRedis.inmemoryRedis import InmemoryRedis
 from requestsViewMenu import setupRequestsViewMenu
 
 #local functions
@@ -89,14 +90,15 @@ def main():
     
     db = get_client()[getenv("mongo_dbname")]
 
-    r=redis.Redis(getenv('redis_host'), getenv('redis_port'))
-    try:
-        if r.ping():
-            mainLogger.info("Redis is ready")
-    except Exception as e:
-        errorLogger.error(e)
-        mainLogger.error("Redis is not ready")
-        raise e
+    r = InmemoryRedis(getenv("redis_host"), getenv("redis_port"))
+    # r=redis.Redis(getenv('redis_host'), getenv('redis_port'))
+    # try:
+    #     if r.ping():
+    #         mainLogger.info("Redis is ready")
+    # except Exception as e:
+    #     errorLogger.error(e)
+    #     mainLogger.error("Redis is not ready")
+    #     raise e
     
     dp=updater.dispatcher
     dp.user_data["r"]   = r
