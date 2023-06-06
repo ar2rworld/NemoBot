@@ -1,17 +1,17 @@
 from typing import Callable, List
 from menus.screen import Screen
 from telegram import InlineKeyboardButton, Message, InlineKeyboardMarkup, MessageId, Update
-from telegram.ext import Dispatcher, CallbackContext, CommandHandler
+from telegram.ext import Application, CallbackContext, CommandHandler
 
 from pymongo.database import Database
 
 class Menu:
-    def __init__(self, name : str, command : str, dispatcher : Dispatcher, db : Database) -> None:
+    def __init__(self, name : str, command : str, application : Application, db : Database) -> None:
         if "_" in name:
             raise Exception(f"Menu name cannot contain \"_\", name: \"{name}\"")
         self.screens = {}
         self.name = name
-        self.dispatcher = dispatcher
+        self.application = application
         self.currentScreen = None
         self.firstScreenName = None
         self.currentScreenName = ""
@@ -50,10 +50,10 @@ class Menu:
             userMenu = db.userMenus.find_one({"userId": userId})
             if userMenu:
                 try:
-                    self.dispatcher.bot.delete_message(chat_id=userId, message_id=userMenu["messageId"])
+                    self.application.bot.delete_message(chat_id=userId, message_id=userMenu["messageId"])
                 except Exception as e:
-                    context.dispatcher.user_data["errorLogger"].error(f"Error deleting message (menu: {userMenu}) from {userId}\n{e}")
-            message = self.dispatcher.bot.send_message(userId, screen.text, reply_markup=screen.markup)
+                    context.application.user_data["errorLogger"].error(f"Error deleting message (menu: {userMenu}) from {userId}\n{e}")
+            message = self.application.bot.send_message(userId, screen.text, reply_markup=screen.markup)
             # create new menu
             menuObj = {"$set" : {"name" : self.name, "currentScreenName" : self.currentScreenName, "messageId" : message.message_id}}
             db.userMenus.update_one({"userId" : userId}, menuObj, upsert=True)
@@ -68,38 +68,38 @@ class Menu:
         self.currentScreenName = screen.name
         userMenu = self.db.userMenus.find_one({ "userId" : chatId })
         messageId = userMenu["messageId"]
-        self.dispatcher.bot.edit_message_text(chat_id=chatId, message_id=messageId, text=screen.text, reply_markup=screen.markup)
+        self.application.bot.edit_message_text(chat_id=chatId, message_id=messageId, text=screen.text, reply_markup=screen.markup)
         return self.name
     def build(self):
         # setup all handlers and callbacks
-        self.dispatcher.user_data["mainLogger"].info(f"Building {self.name}")
-        self.dispatcher.add_handler(CommandHandler(self.command, self.callback))
+        self.application.user_data["mainLogger"].info(f"Building {self.name}")
+        self.application.add_handler(CommandHandler(self.command, self.callback))
         # check if at least one screen exists
         if len(self.screens) == 0:
             raise Exception("No screens in menu")
         # add callbackQueryHandlers from Screens
         for name, s in self.screens.items():
             for callback, callbackFunction in s.callbackButtonFunctions.items():
-                self.dispatcher.user_data["callbackQueryHandlers"][callback + "_" + self.name] = callbackFunction
-        tempMenu = self.dispatcher.user_data[self.name]
+                self.application.user_data["callbackQueryHandlers"][callback + "_" + self.name] = callbackFunction
+        tempMenu = self.application.user_data[self.name]
         if tempMenu:
             raise Exception(f"Menu {self.name} already exists")
         
         def firstScreenButton(update : Update, context : CallbackContext) -> None:
-            user_data = context.dispatcher.user_data
+            user_data = context.application.user_data
             user_data["findMenuInContext"] = findMenuInContext
             menu = findMenuInContext(update, context)
             menu.renderScreen(update.callback_query.from_user.id, self.firstScreenName)
-        self.dispatcher.user_data["callbackQueryHandlers"]["firstScreenButton_" + self.name] = firstScreenButton
+        self.application.user_data["callbackQueryHandlers"]["firstScreenButton_" + self.name] = firstScreenButton
 
-        self.dispatcher.user_data[self.name] = self
-        self.dispatcher.user_data["mainLogger"].info(f"Built {self.name}")
+        self.application.user_data[self.name] = self
+        self.application.user_data["mainLogger"].info(f"Built {self.name}")
         return self
     def renderFirstScreen(self, chatId) -> None:
         self.renderScreen(chatId, self.firstScreenName)
 
 def findMenuInContext(update : Update, context : CallbackContext) -> Menu:
     menuName = update.callback_query.data.split("_")[1]
-    if menuName not in context.dispatcher.user_data:
+    if menuName not in context.application.user_data:
         raise Exception(f"Menu does not exist")
-    return context.dispatcher.user_data[menuName]
+    return context.application.user_data[menuName]
