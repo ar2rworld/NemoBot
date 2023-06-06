@@ -1,8 +1,7 @@
 import subprocess
 from os import getenv
 from telegram import KeyboardButton, ReplyKeyboardMarkup, Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, CallbackContext
-from telegram.ext.filters import Filters
+from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackQueryHandler, CallbackContext, filters
 import redis
 import _thread
 import logging
@@ -141,7 +140,7 @@ def main():
     dp.add_handler(CommandHandler("subscribeToChannels" , subscribeToChannels))
     dp.add_handler(CommandHandler("addEchoPhrase", addEchoPhrase))
     dp.add_handler(CommandHandler("addAlivePhrases", addAlivePhrases))
-    dp.add_handler(MessageHandler(Filters.update.message , echoHandler, run_async=True))
+    dp.add_handler(MessageHandler(filters.update.message , echoHandler, run_async=True))
     
     def callbackQueryHandler(update, context):
         func = context.dispatcher.user_data["callbackQueryHandlers"][update.callback_query.data]
