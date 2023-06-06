@@ -1,6 +1,6 @@
 import subprocess
 from os import getenv
-from telegram import KeyboardButton, ReplyKeyboardMarkup, Update
+from telegram import KeyboardButton, ReplyKeyboardMarkup, Update, Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackQueryHandler, CallbackContext, filters
 import redis
 import _thread
@@ -85,7 +85,7 @@ def main():
     serverLoggerHandler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
     serverLogger.addHandler(serverLoggerHandler)
 
-    updater=Updater(getenv("NemoBotToken"), use_context=True)
+    updater=Updater(Bot(getenv("NemoBotToken")))
     
     db = get_client()[getenv("mongo_dbname")]
 
