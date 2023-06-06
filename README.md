@@ -101,6 +101,16 @@ tokens = {
 }
 ```
 
+## TODO:
+<ul>
+    <li>Tests</li>
+    <li>Run linters</li>
+    <li>Push container to registry</li>
+    <li>Deploy to server</li>
+    <li>Add alerts</li>
+    <li>Add metrics</li>
+</ul>
+
 ### For other commands:
 
 `/help`
