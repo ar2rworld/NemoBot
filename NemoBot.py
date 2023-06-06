@@ -89,15 +89,18 @@ def main():
     
     db = get_client()[getenv("mongo_dbname")]
 
-    r = InmemoryRedis(getenv("redis_host"), getenv("redis_port"))
-    # r=redis.Redis(getenv('redis_host'), getenv('redis_port'))
-    # try:
-    #     if r.ping():
-    #         mainLogger.info("Redis is ready")
-    # except Exception as e:
-    #     errorLogger.error(e)
-    #     mainLogger.error("Redis is not ready")
-    #     raise e
+    r = None
+    if getenv("DEBUG"):
+        r = InmemoryRedis(getenv("redis_host"), getenv("redis_port"))
+    else:
+        r = redis.Redis(getenv('redis_host'), getenv('redis_port'))
+        try:
+            if r.ping():
+                mainLogger.info("Redis is ready")
+        except Exception as e:
+            errorLogger.error(e)
+            mainLogger.error("Redis is not ready")
+            raise e
     
     dp=updater.dispatcher
     dp.user_data["r"]   = r
