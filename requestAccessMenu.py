@@ -1,5 +1,5 @@
 from telegram import Update
-from telegram.ext import CallbackContext, Dispatcher
+from telegram.ext import CallbackContext, Application
 from pymongo.database import Database
 
 from menus.menu import Menu
@@ -64,8 +64,8 @@ def checkMongoCallbackQuery(update, context):
         { "$set" : { "menuName" : menuName, "status" : 0, "requestedCommand" : "checkMongo" }},
         upsert=True)
 
-def setupRequestAccessMenu(dp : Dispatcher, db : Database):
-    menu = Menu("requestAccess", command="requestAccess", dispatcher=dp, db=db)
+def setupRequestAccessMenu(app : Application, db : Database):
+    menu = Menu("requestAccess", command="requestAccess", application=app, db=db)
     menu.addScreenObj({"text" : "Choose command to request access:",
                     "name" : "firstScreen",
                     "rows" : [
