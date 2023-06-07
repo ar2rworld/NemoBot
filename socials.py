@@ -1,3 +1,4 @@
+import io
 from random import random as rnd
 import sched
 import time
@@ -8,7 +9,6 @@ import os
 
 from twitter2 import twitter_post
 from linkedin2 import linkedin
-from access_tokens import tokens
 from decorators.adminOnly import adminOnly
 
 def dec(s):
@@ -70,8 +70,8 @@ def loginVK():
         for tag in findTags(r3.text, 'input', 'hidden'):
             d[tag['name']]=tag['value']
         #You email/phone and password
-        d['email'] = tokens['vk']['email']
-        d['pass']=tokens['vk']['pass']
+        d['email'] = io.getenv('vk_email')
+        d['pass']= io.genenv('vk_pass')
         if i==0:
             to = find_to_parameter(r3.text)
         d['to'] = to

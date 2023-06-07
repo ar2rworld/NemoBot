@@ -1,11 +1,11 @@
 import json
 import requests as req
-from access_tokens import tokens
+import os
 
 def linkedin(message=""):
     url = 'https://api.linkedin.com/v2/ugcPosts'
     j=json.loads('''{
-      "author": "urn:li:person:''' + tokens['linkedin']['urn'] + '''",
+      "author": "urn:li:person:''' + os.getenv('linkedin_urn') + '''",
       "lifecycleState": "PUBLISHED",
       "specificContent": {
         "com.linkedin.ugc.ShareContent": {
@@ -17,7 +17,7 @@ def linkedin(message=""):
       },
       "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"}
     }''')
-    headers = tokens['linkedin']['headers']
+    headers = os.getenv('linkedin_headers')
     res = req.post(url, json=j, headers=headers)
     out=''
     if 'id' in json.loads(res.text):

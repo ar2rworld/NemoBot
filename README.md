@@ -66,39 +66,15 @@ hubUrl=https://pubsubhubbub.appspot.com
 mongo_volume_path=mongo_volume_path
 mongo_initdb_path=mongo_initdb_path
 redis_volume_path=redis_volume_path
+linkedin_headers=someJsonHeadersStructure
+linkedin_urn=someLinkedinUrn
+vk_email=vkEmailOrPhone
+vk_pass=vkPassword
 ```
 
 ### Command
 ```bash
 docker-compose --env-file .env up --remove-orphans -d
-```
-
-### Example of `access_tokens.py`
-
-```python
-tokens = {
-    'twitter': {
-        'test0': {
-            'ArturBot':{
-                'access_token' : 'access_token',
-                'access_token_secret' : 'access_token',
-                'api_key' : 'access_token',
-                'api_secret_key' : 'access_token',
-            }
-        }
-    },
-    'vk': {
-        'email' : 'login',
-        'pass' : 'password'
-    },
-    'linkedin': {
-        'urn' : 'urn',
-        'headers' : {
-            'Authorization' : 'Authorization',
-            'X-Restli-Protocol-Version' : '2.0.0',
-        }
-    }
-}
 ```
 
 ## TODO:

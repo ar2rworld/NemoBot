@@ -6,7 +6,6 @@ from os import getenv
 import logging
 
 from decorators.adminOnly import adminOnly
-from access_tokens import mongo
 
 def get_client():
     errorLogger = logging.getLogger("errorLogger")
