@@ -1,3 +1,4 @@
+import asyncio
 import requests
 import logging
 from time import sleep
@@ -5,11 +6,11 @@ from time import sleep
 from decorators.adminOnly import adminOnly
 logging.basicConfig(filename="subscribe.log", filemode="w", level=logging.DEBUG)
 
-def subscribe(dp):
-  callbackUrl = dp.user_data['callbackUrl']
-  hubUrl =      dp.user_data['hubUrl']
-  tg_my_id =    dp.user_data['tg_my_id']
-  db =          dp.user_data['db']
+async def subscribe(app):
+  callbackUrl = app.bot_data['callbackUrl']
+  hubUrl      = app.bot_data['hubUrl']
+  tg_my_id    = app.bot_data['tg_my_id']
+  db          = app.bot_data['db']
   
   with open("subscribe.log", mode="w") as f:
     f.write("___very_beginning___")
@@ -42,10 +43,10 @@ def subscribe(dp):
           raise Exception("invalid channelId provided for subscribe")
       if len(out) > 0:
         logging.error(f"Number of invalid channels: {len(out)}")
-        dp.bot.send_message(tg_my_id, "I got some problems while subscribing for following channels:\n" + [str(x)+"\n" for x in out])
+        await app.bot.send_message(tg_my_id, "I got some problems while subscribing for following channels:\n" + [str(x)+"\n" for x in out])
       else:
         logging.info(f"Finished subscribe, fetched : {count}")
-        dp.bot.send_message(tg_my_id, f"Finished subscribe, fetched : {count}")
+        await app.bot.send_message(tg_my_id, f"Finished subscribe, fetched : {count}")
         break
     except Exception as e:
       logging.error(e)
@@ -53,5 +54,5 @@ def subscribe(dp):
       sleep(5)
 
 @adminOnly
-def subscribeToChannels(update, context):
-  subscribe(context.dispatcher)
+async def subscribeToChannels(update, context):
+  await subscribe(context.application)

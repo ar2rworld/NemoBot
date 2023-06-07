@@ -90,36 +90,36 @@ def loginVK():
 #loginVK()
 
 def make_post(session, uid, hash, message='testing'):
-    post='act=post&to_id=' +str(uid)+ '&type=all&friends_only=&best_friends_only=&close_comments=0&mute_notifications=0&mark_as_ads=0&official=&signed=&hash=' +hash+ '&from=&fixed=461&update_admin_tips=0&al=1'
-    data_post=dec(post)
-    data_post['Message'] = message
-    r0=session.post('https://vk.com/al_wall.php?act=post',data=data_post)
-    return r0.text
+  post='act=post&to_id=' +str(uid)+ '&type=all&friends_only=&best_friends_only=&close_comments=0&mute_notifications=0&mark_as_ads=0&official=&signed=&hash=' +hash+ '&from=&fixed=461&update_admin_tips=0&al=1'
+  data_post=dec(post)
+  data_post['Message'] = message
+  r0=session.post('https://vk.com/al_wall.php?act=post',data=data_post)
+  return r0.text
 
 @adminOnly
-def post(update, context):
-    if len(update.message.text.split(' '))>1:
-        message=update.message.text
-        first_token = message.split(' ')[1]
-        out=''
-        if '-' in first_token:
-            second_space = message.index(' ', message.index(' ')+1)
-            message = message[second_space:]
-            if 'li' in first_token:
-                out += linkedin(message) +'\n'
-            if 'vk' in first_token:
-                s, uid = loginVK()
-                response0 = s.get('https://oauth.vk.com/authorize?client_id=7888891&display=page&redirect_uri=https://vk.com/ar2r.life&scope=8192&response_type=token&v=5.131&state=123456') 
-                my_page_url='https://vk.com/id'+str(uid)
-                req_my_page = s.get(my_page_url)
-                post_hash = findValue(req_my_page.text, 'post_hash')
-                update.message.chat.send_message('logged in:'+uid)
-                if(s != None):
-                    out += make_post(s, uid, post_hash, message) +'\n'
-            if 'tw' in first_token:
-                twitter_post(message)
-            update.message.chat.send_message(out+'worked!')
-        else:
-            update.message.chat.send_message('-[li][vk][tw] <message> required!')
+async def post(update, context):
+  if len(update.message.text.split(' '))>1:
+    message=update.message.text
+    first_token = message.split(' ')[1]
+    out=''
+    if '-' in first_token:
+      second_space = message.index(' ', message.index(' ')+1)
+      message = message[second_space:]
+      if 'li' in first_token:
+        out += linkedin(message) +'\n'
+      if 'vk' in first_token:
+        s, uid = loginVK()
+        response0 = s.get('https://oauth.vk.com/authorize?client_id=7888891&display=page&redirect_uri=https://vk.com/ar2r.life&scope=8192&response_type=token&v=5.131&state=123456') 
+        my_page_url='https://vk.com/id'+str(uid)
+        req_my_page = s.get(my_page_url)
+        post_hash = findValue(req_my_page.text, 'post_hash')
+        await update.message.chat.send_message('logged in:'+uid)
+        if(s != None):
+          out += make_post(s, uid, post_hash, message) +'\n'
+      if 'tw' in first_token:
+        twitter_post(message)
+      await update.message.chat.send_message(out+'worked!')
     else:
-        update.message.chat.send_message('You are not my architector')
+      await update.message.chat.send_message('-[li][vk][tw] <message> required!')
+  else:
+    await update.message.chat.send_message('You are not my architector')

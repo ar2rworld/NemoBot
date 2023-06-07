@@ -28,7 +28,7 @@ def get_client():
         raise e
 
 @adminOnly
-def checkMongo(update, context):
+async def checkMongo(update, context):
     try:
         tokens = update.message.text.split(' ')
         dbname = tokens[1]
@@ -38,19 +38,19 @@ def checkMongo(update, context):
         rows = db[collection].find()
         count = 0
         for i in rows:
-            update.message.chat.send_message(str(i))
+            await update.message.chat.send_message(str(i))
             count += 1
         if count == 0:
-            update.message.chat.send_message("0 rows found")
+            await update.message.chat.send_message("0 rows found")
     
     except Exception as e:
-        update.message.chat.send_message(str(e))
+        await update.message.chat.send_message(str(e))
         raise e
     finally:
         client.close()
 
 def addToCollection(context, collection, obj, upsertKey=""):
-    db = context.dispatcher.user_data["db"]
+    db = context.application.bot_data["db"]
     try:
         if upsertKey == "":
             return db[collection].insert_one(obj)
@@ -69,7 +69,7 @@ def loadCollection(db, collection):
         raise e
 
 @adminOnly
-def upsertToMongo(update, context):
+async def upsertToMongo(update, context):
     try:
         tokens = update.message.text.split(' ')
         collection = tokens[1]
@@ -77,22 +77,22 @@ def upsertToMongo(update, context):
         subTokens = message.split('|-|')
         filter = json.loads(subTokens[0])
         obj = json.loads(subTokens[1])
-        db = context.dispatcher.user_data["db"]
+        db = context.application.bot_data["db"]
         result = db[collection].update_one(filter, obj, upsert=True)
-        update.message.chat.send_message(f"{result.acknowledged}")
+        await update.message.chat.send_message(f"{result.acknowledged}")
     except Exception as e:
-        update.message.chat.send_message(str(e))
+        await update.message.chat.send_message(str(e))
 
 @adminOnly
-def accessMongo(update, context):
+async def accessMongo(update, context):
     # /mongo action collectionName json
     try:
-        db : Database = context.dispatcher.user_data["db"]
+        db : Database = context.application.bot_data["db"]
         message = update.message.text.replace("/accessMongo ", "")    
         chat = update.message.chat
         if message == "showTables":
             result = db.list_collection_names()
-            chat.send_message(f"{result}")
+            await chat.send_message(f"{result}")
             return
         tokens = message.split(" ")
         if len(tokens) < 2:
@@ -102,7 +102,7 @@ def accessMongo(update, context):
         if action == 'insert':
             obj = json.loads(' '.join(tokens[2:]))
             result = db[collection].insert_one(obj)
-            chat.send_message(f"{result.acknowledged}")
+            await chat.send_message(f"{result.acknowledged}")
         elif action == 'find':
             result = None
             if len(tokens) > 2:
@@ -115,17 +115,17 @@ def accessMongo(update, context):
             for row in result:
                 output += str(row) + "\n"
                 c += 1
-            chat.send_message(f"{output}{c} rows found")
+            await chat.send_message(f"{output}{c} rows found")
         elif action == 'update':
             objects = ' '.join(tokens[2:]).split("|-|")
             filter = json.loads(objects[0])
             obj = json.loads(objects[1])
             result = db[collection].update_one(filter, obj)
-            chat.send_message(f"{result.acknowledged}")
+            await chat.send_message(f"{result.acknowledged}")
         elif action == 'delete':
             filter = json.loads(' '.join(tokens[2:]))
             result = db[collection].delete_one(filter)
-            chat.send_message(f"{result.acknowledged}")
+            await chat.send_message(f"{result.acknowledged}")
     except Exception as e:
-        update.message.chat.send_message(str(e))
+        await update.message.chat.send_message(str(e))
         raise e

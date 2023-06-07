@@ -26,9 +26,9 @@ class Handler(BaseHTTPRequestHandler):
       serverLogger.error(e)
       self.send_error(404, 'Error: %s' % e)
 
-  def do_GET(self):
+  async def do_GET(self):
     try:
-      self.server.telegramDispatcher.bot.send_message(
+      await self.server.telegramDispatcher.bot.send_message(
         getenv('tg_my_id'),
         f"I got a message from {self.client_address}(might be important):\n{self.requestline}",
         disable_notification=True

@@ -4,62 +4,61 @@ from pymongo.database import Database
 
 from menus.menu import Menu
 
-
-def userInputEchoHandler(update : Update, context : CallbackContext):
-        user_data = context.dispatcher.user_data
-        userInput = update.message.text
-        userId = update.message.from_user.id
-        db = user_data["db"]
-        errorLogger = user_data["errorLogger"]
-        try:
-            context.dispatcher.user_data["echoHandlers"].pop(userId)
-        except KeyError:
-            errorLogger.error(f"No echoHandler for user {userId}")
-        menuObj = db.userInput.find_one({ "userId" : userId })
-        menu = user_data[menuObj["menuName"]]
-        requestedCommand = menuObj.get("requestedCommand")
-        if not userInput:
-            menu.renderScreen(userId, "emptyInputScreen")
-            return
-        if not menuObj:
-            errorLogger.error(f"Cannot find userId {userId} in userInput")
-        user = update.message.from_user
-        userObj = { "link" : user.link, "name" : user.name,
-            "fullName" : user.full_name, "username" : user.username}
-        db.users.update_one({ "userId" : userId },
-            { "$set" : userObj }, upsert=True)
-        db.requestedCommands.update_one({ "userId" : userId, "requestedCommand" : requestedCommand },
-            { "$set" : { "userInput" : userInput, "status" : 1 } }, upsert=True)
-        context.dispatcher.bot.send_message(user_data["adminId"],
-            f"User {userId},{user.full_name},{user.username} requested {requestedCommand} with input:\n{userInput}")
-        menu.renderScreen(userId, "thankYouScreen")
+async def userInputEchoHandler(update : Update, context : CallbackContext):
+  bot_data = context.application.bot_data
+  userInput = update.message.text
+  userId = update.message.from_user.id
+  db = bot_data["db"]
+  errorLogger = bot_data["errorLogger"]
+  try:
+      context.application.bot_data["echoHandlers"].pop(userId)
+  except KeyError:
+      errorLogger.error(f"No echoHandler for user {userId}")
+  menuObj = db.userInput.find_one({ "userId" : userId })
+  menu = bot_data[menuObj["menuName"]]
+  requestedCommand = menuObj.get("requestedCommand")
+  if not userInput:
+      menu.renderScreen(userId, "emptyInputScreen")
+      return
+  if not menuObj:
+      errorLogger.error(f"Cannot find userId {userId} in userInput")
+  user = update.message.from_user
+  userObj = { "link" : user.link, "name" : user.name,
+      "fullName" : user.full_name, "username" : user.username}
+  db.users.update_one({ "userId" : userId },
+      { "$set" : userObj }, upsert=True)
+  db.requestedCommands.update_one({ "userId" : userId, "requestedCommand" : requestedCommand },
+      { "$set" : { "userInput" : userInput, "status" : 1 } }, upsert=True)
+  await context.application.bot.send_message(bot_data["adminId"],
+      f"User {userId},{user.full_name},{user.username} requested {requestedCommand} with input:\n{userInput}")
+  menu.renderScreen(userId, "thankYouScreen")
 def authorizeAddEchoPhrase(update, context):
-    user_data = context.dispatcher.user_data
+    bot_data = context.application.bot_data
     userId = update.callback_query.from_user.id
-    menu = user_data["findMenuInContext"](update, context)
-    context.dispatcher.user_data["echoHandlers"][userId] = userInputEchoHandler
+    menu = bot_data["findMenuInContext"](update, context)
+    context.application.bot_data["echoHandlers"][userId] = userInputEchoHandler
     menuName = menu.renderScreen(userId, "reasonScreen")
-    db = user_data["db"]
+    db = bot_data["db"]
     db.userInput.update_one({ "userId" : update.callback_query.from_user.id },
         { "$set" : { "menuName" : menuName, "status" : 0, "requestedCommand" : "addEchoPhrase" }},
         upsert=True)
 def upsertToMongoCallbackQuery(update, context):
-    user_data = context.dispatcher.user_data
+    bot_data = context.application.bot_data
     userId = update.callback_query.from_user.id
-    menu = user_data["findMenuInContext"](update, context)
-    context.dispatcher.user_data["echoHandlers"][userId] = userInputEchoHandler
+    menu = bot_data["findMenuInContext"](update, context)
+    context.application.bot_data["echoHandlers"][userId] = userInputEchoHandler
     menuName = menu.renderScreen(userId, "reasonScreen")
-    db = user_data["db"]
+    db = bot_data["db"]
     db.userInput.update_one({ "userId" : update.callback_query.from_user.id },
         { "$set" : { "menuName" : menuName, "status" : 0, "requestedCommand" : "upsertToMongo" }},
         upsert=True)
 def checkMongoCallbackQuery(update, context):
-    user_data = context.dispatcher.user_data
+    bot_data = context.application.bot_data
     userId = update.callback_query.from_user.id
-    menu = user_data["findMenuInContext"](update, context)
-    context.dispatcher.user_data["echoHandlers"][userId] = userInputEchoHandler
+    menu = bot_data["findMenuInContext"](update, context)
+    context.application.bot_data["echoHandlers"][userId] = userInputEchoHandler
     menuName = menu.renderScreen(userId, "reasonScreen")
-    db = user_data["db"]
+    db = bot_data["db"]
     db.userInput.update_one({ "userId" : update.callback_query.from_user.id },
         { "$set" : { "menuName" : menuName, "status" : 0, "requestedCommand" : "checkMongo" }},
         upsert=True)

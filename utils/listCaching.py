@@ -7,16 +7,16 @@ def loadList(r, context, listName, word=""):
     else:
         if word in list:
             return len(list)
-        context.dispatcher.user_data[listName].add(word)
+        context.application.bot_data[listName].add(word)
         return r.lpush(listName, word)
 
 def removeFromList(r, context, list, key, n=100) -> int:
     try:
         # if key is not in context skip else remove
         word = word.encode("utf-8")
-        if key in context.dispatcher.user_data[list]:
+        if key in context.application.bot_data[list]:
             n = r.lrem(list, n, key)
-            context.dispatcher.user_data[list].remove(key)
+            context.application.bot_data[list].remove(key)
             return n
         else:
             return 0

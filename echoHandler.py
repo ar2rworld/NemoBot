@@ -10,10 +10,10 @@ def echoHandler(update, context):
 
     osuzhdau(update, context)
     
-    user_data = context.dispatcher.user_data
+    bot_data = context.application.bot_data
     try:
         userId = update.message.from_user.id
-        user_data["echoHandlers"][userId](update, context)
+        bot_data["echoHandlers"][userId](update, context)
     except KeyError:
         pass
 

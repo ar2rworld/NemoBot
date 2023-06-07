@@ -1,7 +1,7 @@
 from typing import Tuple
 from os import getenv
 
-def send_notifications(video: Tuple[str,str,str,], telegramDispatcher, db):
+async def send_notifications(video: Tuple[str,str,str,], telegramDispatcher, db):
   if len(video) == 3:
     try:
       link, title, channelId = video
@@ -27,18 +27,18 @@ def send_notifications(video: Tuple[str,str,str,], telegramDispatcher, db):
               send = True
               break
           if send:
-            telegramDispatcher.bot.send_message(channel["chat_id"], text)
+            await telegramDispatcher.bot.send_message(channel["chat_id"], text)
           else:
-            telegramDispatcher.bot.send_message(getenv("tg_my_id"),
+            await telegramDispatcher.bot.send_message(getenv("tg_my_id"),
               f"Received notification bach didnot find any chats to notify:\n{video}")
         else:
-          telegramDispatcher.bot.send_message(channel["chat_id"], text)
+          await telegramDispatcher.bot.send_message(channel["chat_id"], text)
     except Exception as e:
       print(e)
-      telegramDispatcher.bot.send_message(getenv('tg_my_id'), f"Error: {e}")
+      await telegramDispatcher.bot.send_message(getenv('tg_my_id'), f"Error: {e}")
   else:
     #something went wrong, error message in (error, )
     error_message = f"Invalid tokens while sending notifications:{video}"
     print(error_message)
-    telegramDispatcher.bot.send_message(getenv("tg_my_id"), error_message)
+    await telegramDispatcher.bot.send_message(getenv("tg_my_id"), error_message)
       

@@ -3,8 +3,8 @@ from os import getenv
 from mongo_connection import get_client
 
 def save_conversation(context, message):
-  r = context.dispatcher.user_data["r"]
-  db = context.dispatcher.user_data["db"]
+  r = context.application.bot_data["r"]
+  db = context.application.bot_data["db"]
   #check if chat id is in redis
   chat_ids = r.lrange("chat_ids", 0, -1)
   chat_id = message['chat']['id']
