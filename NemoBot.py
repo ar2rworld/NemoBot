@@ -17,12 +17,12 @@ import logging
 from decorators.adminOnly import adminOnly
 from menus.menu import findMenuInContext
 from myRedis.inmemoryRedis import InmemoryRedis
-from requestsViewMenu import setupRequestsViewMenu
+from src.myMenus.requestsViewMenu import setupRequestsViewMenu
 
 #local functions
 from room204 import addCalling204Help, loadList, kolonka, tvoichlen, osuzhdat, neosuzhdat
-from echoHandler import echoHandler
-from socials import post
+from src.handlers.echoHandler import echoHandler
+from src.socialsInteractions.socials import post
 from send_message import send_message
 from utils.echo_commands import my_telegram_id
 from utils.echo import addEchoPhrase
@@ -31,7 +31,7 @@ from utils.other import pickRandomFromList
 from mongo_connection import accessMongo, get_client, checkMongo, addToCollection, loadCollection, upsertToMongo
 from notificator.server import runServer
 from notificator.subscribe import subscribe, subscribeToChannels
-from requestAccessMenu import setupRequestAccessMenu
+from src.myMenus.requestAccessMenu import setupRequestAccessMenu
 
 async def start_command(update, context):
     await update.message.chat.send_message("start command")

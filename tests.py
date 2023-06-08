@@ -1,6 +1,6 @@
 #I have no idea how to test python but i need this function to be tested
 #import make_post from socials
-from socials import dec
+from src.socialsInteractions.socials import dec
 
 try:
   params = 'a=1&b=123&c=a1@><)- 1_'

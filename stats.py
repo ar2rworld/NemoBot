@@ -1,7 +1,5 @@
 from os import getenv
 
-from mongo_connection import get_client
-
 def save_conversation(context, message):
   r = context.application.bot_data["r"]
   db = context.application.bot_data["db"]
