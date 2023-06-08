@@ -13,6 +13,7 @@ requests-html = "0.10.0"
 pymongo = "4.3.3"
 python-telegram-bot = "20.3"
 python-twitter = "^3.5"
+requests = "^2.31.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -22,3 +23,76 @@ deptry = "^0.11.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool]
+
+[tool.black]
+line-length = 120
+skip-string-normalization = false
+
+[tool.deptry]
+ignore_missing = []
+ignore_obsolete = []
+ignore_transitive = []
+
+[tool.ruff]
+ignore = [
+  "ANN101",  # Missing type annotation for self in a class method
+  "ANN102",  # Missing type annotation for cls in a classmethod
+  "C408",  # Unnecessary `dict` call
+  "PLR2004",  # Magic value used in comparison
+  "RET504",  # Unnecessary variable assignment before `return` statement
+  "RUF002",  # Docstring contains ambiguous unicode character
+  "RUF003",  # Comment contains ambiguous unicode character
+  "UP006",  # Use `list` instead of `List` for type annotations
+  "UP007"  # Use `X | Y` for type annotations
+]
+line-length = 120
+select = [
+  # "D",   # pydocstyle
+  "F",  # Pyflakes
+  "I",  # isort
+  "N",  # pep8-naming
+  "RUF",  # Ruff-specific rules
+  "UP",  # pyupgrade
+  # pycodestyle
+  "E",  # pycodestyle errors
+  "W",  # pycodestyle warnings
+  # flake8
+  "A",  # flake8-builtins
+  "ANN",  # flake8-annotations
+  "ARG",  # flake8-unused-arguments
+  "B",  # flake8-bugbear
+  "BLE",  # flake8-blind-except
+  "C",  # flake8-comprehensions
+  "C4",  # flake8-comprehensions
+  # "DTZ", # flake8-datetimez TODO: Enable me
+  "EM",  # flake8-errmsg
+  # "FBT", # flake8-boolean-trap
+  "ICN",  # flake8-import-conventions
+  "ISC",  # flake8-implicit-str-concat
+  "PIE",  # flake8-pie
+  "PT",  # flake8-pytest-style
+  "Q",  # flake8-quotes
+  "RET",  # flake8-return
+  "S",  # flake8-bandit
+  "SIM",  # flake8-simplify
+  "T10",  # flake8-debugger
+  "T20",  # flake8-print
+  "TID",  # flake8-tidy-imports
+  "YTT",  # flake8-2020
+  # "ERA", # eradicate
+  "PD",  # pandas-vet
+  "PGH",  # pygrep-hooks
+  # Pylint
+  "PLC",
+  "PLE",
+  "PLR",
+  "PLW"
+]
+
+[tool.ruff.isort]
+combine-as-imports = false
+force-single-line = true
+known-first-party = ["app"]
+order-by-type = true
