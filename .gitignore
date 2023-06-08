@@ -8,3 +8,4 @@ postgres
 *.log
 launch.json
 .vscode
+.idea
