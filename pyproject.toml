@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "nemobot"
+version = "0.1.0"
+description = ""
+authors = ["Artur Linnik <ar2r.world@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.9.9"
+redis = "4.5.5"
+requests-html = "0.10.0"
+pymongo = "4.3.3"
+python-telegram-bot = "20.3"
+python-twitter = "^3.5"
+
+
+[tool.poetry.group.dev.dependencies]
+pyright = "^1.1.313"
+deptry = "^0.11.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
