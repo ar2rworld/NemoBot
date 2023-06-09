@@ -1,43 +1,55 @@
+import _thread
 import datetime
+import logging
 import subprocess
 from os import getenv
-from telegram import KeyboardButton, ReplyKeyboardMarkup, Update, Bot
-from telegram.ext import (
-  Application,
-  CommandHandler,
-  MessageHandler,
-  CallbackQueryHandler,
-  CallbackContext,
-  filters,
-  ContextTypes
-)
+
 import redis
-import _thread
-import logging
-from decorators.adminOnly import adminOnly
-from menus.menu import findMenuInContext
-from myRedis.inmemoryRedis import InmemoryRedis
-from src.myMenus.requestsViewMenu import setupRequestsViewMenu
+from telegram import KeyboardButton
+from telegram import ReplyKeyboardMarkup
+from telegram import Update
+from telegram.ext import Application
+from telegram.ext import CallbackQueryHandler
+from telegram.ext import CommandHandler
+from telegram.ext import ContextTypes
+from telegram.ext import MessageHandler
+from telegram.ext import filters
 
-#local functions
-from room204 import addCalling204Help, loadList, kolonka, tvoichlen, osuzhdat, neosuzhdat
 from src.handlers.echoHandler import echoHandler
-from src.socialsInteractions.socials import post
-from send_message import send_message
-from utils.echo_commands import my_telegram_id
-from utils.echo import addEchoPhrase
-from utils.alivePhrases import addAlivePhrases
-from utils.other import pickRandomFromList
-from mongo_connection import accessMongo, get_client, checkMongo, addToCollection, loadCollection, upsertToMongo
-from notificator.server import runServer
-from notificator.subscribe import subscribe, subscribeToChannels
-from src.myMenus.requestAccessMenu import setupRequestAccessMenu
 
-async def start_command(update, context):
+# local functions
+from src.handlers.room204 import addCalling204Help
+from src.handlers.room204 import kolonka
+from src.handlers.room204 import neosuzhdat
+from src.handlers.room204 import osuzhdat
+from src.handlers.room204 import tvoichlen
+from src.handlers.send_message import send_message
+from src.menus.menu import find_menu_in_context
+from src.mongo.mongo_connection import accessMongo
+from src.mongo.mongo_connection import check_mongo
+from src.mongo.mongo_connection import get_client
+from src.mongo.mongo_connection import load_collection
+from src.mongo.mongo_connection import upsert_to_mongo
+from src.my_menus.requestAccessMenu import setupRequestAccessMenu
+from src.my_redis.inmemoryRedis import InmemoryRedis
+from src.notificator.server import runServer
+from src.notificator.subscribe import subscribe
+from src.notificator.subscribe import subscribeToChannels
+from src.socials_interactions.socials import post
+from src.utils.alivePhrases import addAlivePhrases
+from src.utils.echo import addEchoPhrase
+from src.utils.echo_commands import my_telegram_id
+from src.utils.listCaching import loadList
+from src.utils.other import pickRandomFromList
+
+
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.chat.send_message("start command")
 
-async def help_command(update, context):
-    await update.message.chat.send_message('''
+
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.chat.send_message(
+        """
 /postaviat
 /tvoichlen
 /osuzhdat <bad word>
@@ -56,134 +68,137 @@ Admin commands:
     /addEchoPhrase <phrase>|-|<answer>
     /subscribeToChannels
     /accessMongo [showTables] <insert|find|update|delete> <collectionName> [filter|<filter|-|json>]
-    ''')
+    """
+    )
 
-async def test(update, context):
-  await update.message.chat.send_message("yeah, this is a test command")
 
-def error(update, context):
-  if getenv("DEBUG") == "True":
-      print('Update "%s"\n\nCaused error "%s"' % (update, context.error))
-  errorLogger = context.application.bot_data["errorLogger"]
-  errorLogger.error(update)
-  errorLogger.error(context.error)
-    
+async def test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.chat.send_message("yeah, this is a test command")
+
+
+def error(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    error_logger = context.application.bot_data["errorLogger"]
+    error_logger.error(update)
+    error_logger.error(context.error)
+
+
 def main():
-  xmlParserLogger = logging.getLogger("xmlParser")
-  xmlParserLogger.setLevel(logging.INFO)
-  xmlParserHandler = logging.FileHandler("xmlBodyLocal.log", "a", "utf-8")
-  xmlParserHandler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
-  xmlParserLogger.addHandler(xmlParserHandler)
+    xml_parser_logger = logging.getLogger("xmlParser")
+    xml_parser_logger.setLevel(logging.INFO)
+    xml_parser_handler = logging.FileHandler("xmlBodyLocal.log", "a", "utf-8")
+    xml_parser_handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
+    xml_parser_logger.addHandler(xml_parser_handler)
 
-  errorLogger = logging.getLogger("errorLogger")
-  errorLogger.setLevel(logging.ERROR)
-  errorLoggerHandler = logging.FileHandler("error.log", "a", "utf-8")
-  errorLoggerHandler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
-  errorLogger.addHandler(errorLoggerHandler)
+    error_logger = logging.getLogger("errorLogger")
+    error_logger.setLevel(logging.ERROR)
+    error_logger_handler = logging.FileHandler("error.log", "a", "utf-8")
+    error_logger_handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
+    error_logger.addHandler(error_logger_handler)
 
-  mainLogger = logging.getLogger("mainLogger")
-  mainLogger.setLevel(logging.INFO)
-  mainLoggerHandler = logging.FileHandler("main.log", "a", "utf-8")
-  mainLoggerHandler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
-  mainLogger.addHandler(mainLoggerHandler)
+    main_logger = logging.getLogger("mainLogger")
+    main_logger.setLevel(logging.INFO)
+    main_logger_handler = logging.FileHandler("main.log", "a", "utf-8")
+    main_logger_handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
+    main_logger.addHandler(main_logger_handler)
 
-  mainLogger.info("Starting...")
+    main_logger.info("Starting...")
 
-  serverLogger = logging.getLogger("serverLogger")
-  serverLoggerHandler = logging.FileHandler("server.log", "a", "utf-8")
-  serverLoggerHandler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
-  serverLogger.addHandler(serverLoggerHandler)
+    server_logger = logging.getLogger("serverLogger")
+    server_logger_handler = logging.FileHandler("server.log", "a", "utf-8")
+    server_logger_handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
+    server_logger.addHandler(server_logger_handler)
 
-  app = Application.builder().token(getenv("NemoBotToken")).build()
-  
-  db = get_client()[getenv("mongo_dbname")]
+    app = Application.builder().token(getenv("NEMOBOTTOKEN")).build()
 
-  r = None
-  if getenv("DEBUG"):
-      r = InmemoryRedis(getenv("redis_host"), getenv("redis_port"))
-  else:
-      r = redis.Redis(getenv('redis_host'), getenv('redis_port'))
-      try:
-          if r.ping():
-              mainLogger.info("Redis is ready")
-      except Exception as e:
-          errorLogger.error(e)
-          mainLogger.error("Redis is not ready")
-          raise e
+    db = get_client()[getenv("MONGO_DBNAME")]
 
-  app.bot_data["r"]   = r
-  app.bot_data["db"]  = db
-  app.bot_data["mainLogger"]            = mainLogger
-  app.bot_data["errorLogger"]           = errorLogger
-  app.bot_data["findMenuInContext"]     = findMenuInContext
-  app.bot_data["callbackUrl"]           = getenv("callbackUrl")
-  app.bot_data["hubUrl"]                = getenv("hubUrl")
-  app.bot_data["tg_my_id"]              = getenv("tg_my_id")
-  app.bot_data["adminId"]               = getenv("tg_my_id")
-  app.bot_data["calling204Phrases"]     = set(loadList(r, context=None, listName="calling204Phrases"))
-  app.bot_data["echoPhrases"]           = loadCollection(db, "echoPhrases")
-  app.bot_data["alivePhrases"]          = loadCollection(db, "alivePhrases") or [{"phrase" : "I am alive"}]
-  app.bot_data["mat"]                   = set(loadList(r, context=None, listName="mat"))
-  app.bot_data["botChannel"]            = getenv("botChannel")
-  app.bot_data["botGroup"]              = getenv("botGroup")
-  app.bot_data["callbackQueryHandlers"] = {}
-  app.bot_data["echoHandlers"]          = {}
+    r = None
+    if getenv("DEBUG"):
+        r = InmemoryRedis(getenv("REDIS_HOST"), getenv("REDIS_PORT"))
+    else:
+        r = redis.Redis(getenv("REDIS_HOST"), int(getenv("REDIS_PORT")))
+        try:
+            if r.ping():
+                main_logger.info("Redis is ready")
+        except Exception as e:
+            error_logger.error(e)
+            main_logger.error("Redis is not ready")
+            raise e
 
-  menu = setupRequestAccessMenu(app, db)
-  #setupRequestsViewMenu(app, db)
+    app.bot_data["r"] = r
+    app.bot_data["db"] = db
+    app.bot_data["mainLogger"] = main_logger
+    app.bot_data["errorLogger"] = error_logger
+    app.bot_data["findMenuInContext"] = find_menu_in_context
+    app.bot_data["callbackUrl"] = getenv("CALLBACKURL")
+    app.bot_data["hubUrl"] = getenv("HUBURL")
+    app.bot_data["tg_my_id"] = getenv("TG_MY_ID")
+    app.bot_data["adminId"] = getenv("TG_MY_ID")
+    app.bot_data["calling204Phrases"] = set(loadList(r, context=None, listName="calling204Phrases"))
+    app.bot_data["echoPhrases"] = load_collection(db, "echoPhrases")
+    app.bot_data["alivePhrases"] = load_collection(db, "alivePhrases") or [{"phrase": "I am alive"}]
+    app.bot_data["mat"] = set(loadList(r, context=None, listName="mat"))
+    app.bot_data["botChannel"] = getenv("BOTCHANNEL")
+    app.bot_data["botGroup"] = getenv("BOTGROUP")
+    app.bot_data["callbackQueryHandlers"] = {}
+    app.bot_data["echoHandlers"] = {}
 
-  app.bot_data["findMenuInContext"] = findMenuInContext
+    setupRequestAccessMenu(app, db)
+    # setupRequestsViewMenu(app, db)
 
-  app.add_handler(CommandHandler("start", start_command))
-  app.add_handler(CommandHandler("help", help_command))
-  app.add_handler(CommandHandler("postaviat", kolonka))
-  app.add_handler(CommandHandler("tvoichlen", tvoichlen))
-  app.add_handler(CommandHandler("osuzhdat", osuzhdat))
-  app.add_handler(CommandHandler("neosuzhdat", neosuzhdat))
-  app.add_handler(CommandHandler("my_telegram_id", my_telegram_id))
-  app.add_handler(CommandHandler("addCalling204Help", addCalling204Help))
-  app.add_handler(CommandHandler("test", test))
-  app.add_handler(CommandHandler("post", post))
-  app.add_handler(CommandHandler("send_message", send_message))
-  app.add_handler(CommandHandler("accessMongo", accessMongo))
-  app.add_handler(CommandHandler("checkMongo", checkMongo))
-  app.add_handler(CommandHandler("upsertToMongo", upsertToMongo))
-  app.add_handler(CommandHandler("subscribeToChannels" , subscribeToChannels))
-  app.add_handler(CommandHandler("addEchoPhrase", addEchoPhrase))
-  app.add_handler(CommandHandler("addAlivePhrases", addAlivePhrases))
-  app.add_handler(MessageHandler(filters.TEXT, echoHandler))
-  
-  def callbackQueryHandler(update, context):
-      func = context.application.bot_data["callbackQueryHandlers"][update.callback_query.data]
-      if not func:
-          raise Exception(f"Callback query handler: \"{update.callback_query.data}\" not found")
-      func(update, context)
+    app.bot_data["findMenuInContext"] = find_menu_in_context
 
-  app.add_handler(CallbackQueryHandler(callbackQueryHandler))
-  app.add_error_handler(error)
+    app.add_handler(CommandHandler("start", start_command))
+    app.add_handler(CommandHandler("help", help_command))
+    app.add_handler(CommandHandler("postaviat", kolonka))
+    app.add_handler(CommandHandler("tvoichlen", tvoichlen))
+    app.add_handler(CommandHandler("osuzhdat", osuzhdat))
+    app.add_handler(CommandHandler("neosuzhdat", neosuzhdat))
+    app.add_handler(CommandHandler("my_telegram_id", my_telegram_id))
+    app.add_handler(CommandHandler("addCalling204Help", addCalling204Help))
+    app.add_handler(CommandHandler("test", test))
+    app.add_handler(CommandHandler("post", post))
+    app.add_handler(CommandHandler("send_message", send_message))
+    app.add_handler(CommandHandler("accessMongo", accessMongo))
+    app.add_handler(CommandHandler("checkMongo", check_mongo))
+    app.add_handler(CommandHandler("upsertToMongo", upsert_to_mongo))
+    app.add_handler(CommandHandler("subscribeToChannels", subscribeToChannels))
+    app.add_handler(CommandHandler("addEchoPhrase", addEchoPhrase))
+    app.add_handler(CommandHandler("addAlivePhrases", addAlivePhrases))
+    app.add_handler(MessageHandler(filters.TEXT, echoHandler))
 
-  _thread.start_new_thread(runServer, (app, db, getenv('notificator_host'), getenv('notificator_port')))
-  app.job_queue.run_daily(lambda x: subscribe(app), datetime.time(0, 0))
+    def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        func = context.application.bot_data["callbackQueryHandlers"][update.callback_query.data]
+        if not func:
+            raise Exception(f'Callback query handler: "{update.callback_query.data}" not found')
+        func(update, context)
 
-  async def sendAliveMessage(context: ContextTypes.DEFAULT_TYPE):
-    # send alive messages
-    await app.bot.send_message(app.bot_data["tg_my_id"], "hello comrade!",reply_markup=ReplyKeyboardMarkup([
-      [KeyboardButton("/help")],
-      [KeyboardButton("/requestAccess")]
-    ]))
-    if not getenv("DEBUG"):
-      commits = subprocess.check_output(["git", "log"]).decode("utf-8")
-      lastCommit = commits[commits.find('Author',1) : commits.find('commit', 1)].replace("\n", "")
-      phrase = pickRandomFromList(app.bot_data["alivePhrases"])["phrase"]
-      channelPost = f'{lastCommit}\n{phrase}'
-      await app.bot.send_message(app.bot_data["botChannel"], channelPost)
-      await app.bot.send_message(app.bot_data["botGroup"], phrase)
-  
-  app.job_queue.run_once(sendAliveMessage, 0)
+    app.add_handler(CallbackQueryHandler(callback_query_handler))
+    app.add_error_handler(error)
 
-  mainLogger.info("Started")
-  app.run_polling()
+    _thread.start_new_thread(runServer, (app, db, getenv("NOTIFICATOR_HOST"), getenv("NOTIFICATOR_PORT")))
+    app.job_queue.run_daily(lambda x: subscribe(app), datetime.time(0, 0))
 
-main()
+    async def send_alive_message(context: ContextTypes.DEFAULT_TYPE):
+        # send alive messages
+        await app.bot.send_message(
+            app.bot_data["tg_my_id"],
+            "hello comrade!",
+            reply_markup=ReplyKeyboardMarkup([[KeyboardButton("/help")], [KeyboardButton("/requestAccess")]]),
+        )
+        if not getenv("DEBUG"):
+            commits = subprocess.check_output(["git", "log"]).decode("utf-8")
+            last_commit = commits[commits.find("Author", 1): commits.find("commit", 1)].replace("\n", "")
+            phrase = pickRandomFromList(app.bot_data["alivePhrases"])["phrase"]
+            channel_post = f"{last_commit}\n{phrase}"
+            await app.bot.send_message(app.bot_data["botChannel"], channel_post)
+            await app.bot.send_message(app.bot_data["botGroup"], phrase)
 
-# TODO write some tests for handlers
+    app.job_queue.run_once(send_alive_message, 0)
+
+    main_logger.info("Started")
+    app.run_polling()
+
+
+if __name__ == "__main__":
+    main()
