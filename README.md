@@ -87,6 +87,12 @@ docker-compose --env-file .env up --remove-orphans -d
     <li>Add metrics</li>
 </ul>
 
+### Linters:
+```bash
+    pre-commit run -a
+    pre-commit run   [hook]
+```
+
 ### For other commands:
 
 `/help`
