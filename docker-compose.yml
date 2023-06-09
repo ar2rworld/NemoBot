@@ -1,50 +1,49 @@
-version: "3.9"
+version: '3.9'
 
 services:
   web:
     volumes:
-      - "${project_dir}:/usr/src/app"
+    - ${PROJECT_DIR}:/usr/src/app
     environment:
-      - "redis_host=${redis_host}"
-      - "redis_port=${redis_port}"
-      - "mongo_host=${mongo_host}"
-      - "mongo_port=${mongo_port}"
-      - "mongo_dbname=${mongo_dbname}"
-      - "MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}"
-      - "MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}"
-      - "NemoBotToken=${NemoBotToken}"
-      - "botChannel=${botChannel}"
-      - "botGroup=${botGroup}"
-      - "tg_my_id=${tg_my_id}"
-      - "notificator_host=${notificator_host}"
-      - "notificator_port=${notificator_port}"
-      - "callbackUrl=${callbackUrl}"
-      - "hubUrl=${hubUrl}"
+    - REDIS_HOST=${REDIS_HOST}
+    - REDIS_PORT=${REDIS_PORT}
+    - MONGO_HOST=${MONGO_HOST}
+    - MONGO_PORT=${MONGO_PORT}
+    - MONGO_DBNAME=${MONGO_DBNAME}
+    - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+    - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    - NEMOBOTTOKEN=${NEMOBOTTOKEN}
+    - BOTGROUP=${BOTGROUP}
+    - BOTCHANNEL=${BOTCHANNEL}
+    - TG_MY_ID=${TG_MY_ID}
+    - NOTIFICATOR_HOST=${NOTIFICATOR_HOST}
+    - NOTIFICATOR_PORT=${NOTIFICATOR_PORT}
+    - CALLBACKURL=${CALLBACKURL}
+    - HUBURL=${HUBURL}
     ports:
-      - "${notificator_port}:${notificator_port}"
+    - ${notificator_port}:${notificator_port}
     build: .
     restart: always
     depends_on:
-      - redis
-      - mongo
+    - redis
+    - mongo
   mongo:
     image: mongo:4-focal
     command: mongod --port ${mongo_port}
     volumes:
-      - "${mongo_volume_path}:/data/db:rw"
-      - "${mongo_initdb_path}:/docker-entrypoint-initdb.d:ro"
+    - ${MONGOVOLUMEPATH}:/data/db:rw
+    - ${MONGOINITDBPATH}:/docker-entrypoint-initdb.d:ro
     environment:
-      - "MONGO_INITDB_DATABASE=${mongo_dbname}"
-      - "MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}"
-      - "MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}"
+    - MONGO_INITDB_DATABASE=${MONGO_DBNAME}
+    - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+    - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
     ports:
-      - "${mongo_port}:27017"
+    - ${mongo_port}:27017
 
   redis:
     image: redis:6
     command: --port ${redis_port}
     volumes:
-      - "${redis_volume_path}:/data"
+    - ${REDISVOLUMEPATH}:/data
     ports:
-      - "${redis_port}:6379"
-
+    - ${REDIS_PORT}:6379
