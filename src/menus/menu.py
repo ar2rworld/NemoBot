@@ -1,4 +1,6 @@
-from typing import Callable, Any, Coroutine
+from collections.abc import Callable
+from collections.abc import Coroutine
+from typing import Any
 
 from pymongo.database import Database
 from telegram import InlineKeyboardButton

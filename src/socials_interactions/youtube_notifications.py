@@ -1,14 +1,7 @@
-from datetime import date, datetime
-import json
-import requests
-from datetime import datetime
-
-from mongo_connection import get_db
-
-def composeMessage(video: object):
-  title = video['snippet']['title']
-  id = video['id']['videoId']
-  return f'{title}\nhttps://www.youtube.com/watch?v={id}'
+# def composeMessage(video: object):
+#     title = video["snippet"]["title"]
+#     id = video["id"]["videoId"]
+#     return f"{title}\nhttps://www.youtube.com/watch?v={id}"
 
 
 # def watchChannels(context):
@@ -32,7 +25,7 @@ def composeMessage(video: object):
 #               videosToNotify.append(v)
 #     else:
 #       videosToNotify = data
-    
+
 #     if len(videosToNotify) and videosToNotify[0]['id']['videoId'] != i.get('lastVideoId'):
 #       print('have some videos', videosToNotify[0], i.get('lastVideoId'))
 #       context.bot.sendMessage(i['chat_id'], '\n'.join([composeMessage(v) for v in videosToNotify]))
@@ -52,4 +45,4 @@ def composeMessage(video: object):
 
 # def setupJobQueue(dp):
 #   dp.job_queue.run_repeating(callback=watchChannels, interval=60)
-#setupJobQueue()
+# setupJobQueue()

@@ -39,7 +39,7 @@ from src.socials_interactions.socials import post
 from src.utils.alivePhrases import addAlivePhrases
 from src.utils.echo import addEchoPhrase
 from src.utils.echo_commands import my_telegram_id
-from src.utils.listCaching import loadList
+from src.utils.listCaching import load_list
 from src.utils.other import pickRandomFromList
 
 
@@ -134,10 +134,10 @@ def main():
     app.bot_data["hubUrl"] = getenv("HUBURL")
     app.bot_data["tg_my_id"] = getenv("TG_MY_ID")
     app.bot_data["adminId"] = getenv("TG_MY_ID")
-    app.bot_data["calling204Phrases"] = set(loadList(r, context=None, listName="calling204Phrases"))
+    app.bot_data["calling204Phrases"] = set(load_list(r, context=None, list_name="calling204Phrases"))
     app.bot_data["echoPhrases"] = load_collection(db, "echoPhrases")
     app.bot_data["alivePhrases"] = load_collection(db, "alivePhrases") or [{"phrase": "I am alive"}]
-    app.bot_data["mat"] = set(loadList(r, context=None, listName="mat"))
+    app.bot_data["mat"] = set(load_list(r, context=None, list_name="mat"))
     app.bot_data["botChannel"] = getenv("BOTCHANNEL")
     app.bot_data["botGroup"] = getenv("BOTGROUP")
     app.bot_data["callbackQueryHandlers"] = {}
@@ -188,7 +188,7 @@ def main():
         )
         if not getenv("DEBUG"):
             commits = subprocess.check_output(["git", "log"]).decode("utf-8")
-            last_commit = commits[commits.find("Author", 1): commits.find("commit", 1)].replace("\n", "")
+            last_commit = commits[commits.find("Author", 1) : commits.find("commit", 1)].replace("\n", "")
             phrase = pickRandomFromList(app.bot_data["alivePhrases"])["phrase"]
             channel_post = f"{last_commit}\n{phrase}"
             await app.bot.send_message(app.bot_data["botChannel"], channel_post)
