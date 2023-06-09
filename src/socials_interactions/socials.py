@@ -6,7 +6,7 @@ from requests_html import HTMLSession
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from src.decorators.adminOnly import adminOnly
+from src.decorators.adminOnly import admin_only
 from src.socials_interactions.linkedin2 import linkedin
 from src.socials_interactions.twitter2 import twitter_post
 
@@ -112,7 +112,7 @@ def make_post(session, uid, hash, message="testing"):
     return r0.text
 
 
-@adminOnly
+@admin_only
 async def post(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if len(update.message.text.split(" ")) > 1:
         errorLogger = context.application.bot_data["errorLogger"]

@@ -3,7 +3,7 @@ import re
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from src.decorators.adminOnly import adminOnly
+from src.decorators.adminOnly import admin_only
 from src.mongo.mongo_connection import add_to_collection
 
 
@@ -20,14 +20,19 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             print(e)
 
 
-@adminOnly
-async def addEchoPhrase(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    message = update.message.text.replace("/addEchoPhrase ", "")
-    if "|-|" in message:
-        phrase, answer = message.split("|-|")
-        obj = {"phrase": phrase.lower(), "answer": answer}
-        context.application.bot_data["echoPhrases"].append(obj)
-        result = add_to_collection(context, "echoPhrases", obj, upsert_key="phrase")
-        await update.message.chat.send_message(f"Added {result.acknowledged}")
-    else:
-        await update.message.chat.send_message("'|-|' delimiter is missing")
+@admin_only
+async def add_echo_phrase(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if (
+        update.message is not None
+        and update.message.chat is not None
+        and update.message.text is not None
+    ):
+        message = update.message.text.replace("/addEchoPhrase ", "")
+        if "|-|" in message:
+            phrase, answer = message.split("|-|")
+            obj = {"phrase": phrase.lower(), "answer": answer}
+            context.application.bot_data["echoPhrases"].append(obj)
+            result = add_to_collection(context, "echoPhrases", obj, upsert_key="phrase")
+            await update.message.chat.send_message(f"Added {result.acknowledged}")
+        else:
+            await update.message.chat.send_message("'|-|' delimiter is missing")

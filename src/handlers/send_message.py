@@ -1,10 +1,10 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from src.decorators.adminOnly import adminOnly
+from src.decorators.adminOnly import admin_only
 
 
-@adminOnly
+@admin_only
 async def send_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     tokens = update.message.text.split(" ")
     if len(tokens) > 2:

@@ -3,7 +3,7 @@ from time import sleep
 
 import requests
 
-from src.decorators.adminOnly import adminOnly
+from src.decorators.adminOnly import admin_only
 
 logging.basicConfig(filename="subscribe.log", filemode="w", level=logging.DEBUG)
 
@@ -61,6 +61,6 @@ async def subscribe(app):
             sleep(5)
 
 
-@adminOnly
+@admin_only
 async def subscribeToChannels(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await subscribe(context.application)

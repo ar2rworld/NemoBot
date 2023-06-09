@@ -1,4 +1,8 @@
-def adminOnly(func):
+from telegram import Update
+from telegram.ext import ContextTypes
+
+
+def admin_only(func):
     async def inner(update: Update, context: ContextTypes.DEFAULT_TYPE):
         userId = str(update.message.from_user.id)
         bot_data = context.application.bot_data
