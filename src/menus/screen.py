@@ -25,24 +25,24 @@ class Screen:
                         raise Exception(f'Button callback cannot contain "_", name: "{button}"')
         self.menuName = obj["menuName"]
         self.text = obj["text"]
-        self.createMarkup()
+        self.create_markup()
 
     def __str__(self) -> str:
-        return f"Screen: {self.text}, callback: {self.callback}, nRows: {len(self.rows)}"
+        return f"Screen: {self.text}, callback: {self.name}, nRows: {len(self.rows)}"
 
-    def createMarkup(self) -> List[List[InlineKeyboardButton]]:
+    def create_markup(self) -> List[List[InlineKeyboardButton]]:
         if "rows" in self.obj:
             for row in self.obj["rows"]:
-                tRow = []
+                t_row = []
                 for button in row:
                     self.callbackButtonFunctions[button["callbackData"]] = button["callbackFunction"]
-                    tRow.append(
+                    t_row.append(
                         InlineKeyboardButton(
                             button["text"],
                             callback_data=f'{button["callbackData"]}_{self.menuName}',
                         )
                     )
-                self.rows.append(tRow)
+                self.rows.append(t_row)
         return self.rows
 
     def build(self):
