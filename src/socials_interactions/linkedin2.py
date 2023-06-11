@@ -1,32 +1,25 @@
 import json
 import os
+from typing import Any, Union
 
 import requests as req
 
 
 def linkedin(message=""):
     url = "https://api.linkedin.com/v2/ugcPosts"
-    j = json.loads(
-        """{
-      "author": "urn:li:person:"""
-        + os.getenv("LINKEDIN_URN")
-        + '''",
-      "lifecycleState": "PUBLISHED",
-      "specificContent": {
-        "com.linkedin.ugc.ShareContent": {
-          "shareCommentary": {
-            "text": "'''
-        + message
-        + """"
-          },
-        "shareMediaCategory": "NONE"
-        }
-      },
-      "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"}
-    }"""
-    )
-    headers = json.loads(os.getenv("LINKEDIN_HEADERS"))
+    linkedin_urn: Union[str, None] = os.getenv("LINKEDIN_URN")
+    j = {
+        "author": f"urn:li:person:{linkedin_urn}",
+        "lifecycleState": "PUBLISHED",
+        "specificContent": {
+            "com.linkedin.ugc.ShareContent": {"shareCommentary": {"text": message}, "shareMediaCategory": "NONE"}
+        },
+        "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"},
+    }
+    headers: Any = {}
+    header_env: Union[str, None] = os.getenv("LINKEDIN_HEADERS")
+    if header_env:
+        headers = json.loads(header_env)
     res = req.post(url, json=j, headers=headers)
-    out = ""
     out = "linkedin+" if "id" in json.loads(res.text) else "linkedin-\n" + res.text
     return out
