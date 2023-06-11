@@ -19,6 +19,7 @@ requests = "^2.31.0"
 [tool.poetry.group.dev.dependencies]
 pyright = "^1.1.313"
 deptry = "^0.11.0"
+ruff = "^0.0.272"
 
 [build-system]
 requires = ["poetry-core"]

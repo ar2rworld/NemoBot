@@ -36,8 +36,8 @@ from src.notificator.server import runServer
 from src.notificator.subscribe import subscribe
 from src.notificator.subscribe import subscribeToChannels
 from src.socials_interactions.socials import post
-from src.utils.alivePhrases import addAlivePhrases
-from src.utils.echo import addEchoPhrase
+from src.utils.alivePhrases import add_alive_phrases
+from src.utils.echo import add_echo_phrase
 from src.utils.echo_commands import my_telegram_id
 from src.utils.listCaching import load_list
 from src.utils.other import pickRandomFromList
@@ -163,8 +163,8 @@ def main():
     app.add_handler(CommandHandler("checkMongo", check_mongo))
     app.add_handler(CommandHandler("upsertToMongo", upsert_to_mongo))
     app.add_handler(CommandHandler("subscribeToChannels", subscribeToChannels))
-    app.add_handler(CommandHandler("addEchoPhrase", addEchoPhrase))
-    app.add_handler(CommandHandler("addAlivePhrases", addAlivePhrases))
+    app.add_handler(CommandHandler("addEchoPhrase", add_echo_phrase))
+    app.add_handler(CommandHandler("addAlivePhrases", add_alive_phrases))
     app.add_handler(MessageHandler(filters.TEXT, echoHandler))
 
     def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):

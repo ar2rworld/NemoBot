@@ -4,7 +4,9 @@ from telegram.ext import ContextTypes
 from src.mongo.mongo_connection import add_to_collection
 
 
-async def addAlivePhrases(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def add_alive_phrases(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message is None or update.message.text is None:
+        raise ValueError("Missing message or text")
     message = update.message.text.replace("/addAlivePhrases ", "")
     delimiter = "|,|"
     n = 0

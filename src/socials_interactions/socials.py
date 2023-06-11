@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+from typing import Tuple
 
 from requests_html import HTMLSession
 from telegram import Update
@@ -56,16 +57,16 @@ def findValue(s: str, key: str) -> str:
 
 def find_to_parameter(html: str) -> str:
     # in js page
-    str = '"to":'
+    string = '"to":'
     for line in html.split("\n"):
-        if str in line:
+        if string in line:
             # print(line)
-            s = line.index(str) + len(str) + 1
+            s = line.index(string) + len(string) + 1
             return line[s : s + line[s:].index('"')]
-    return None
+    return ""
 
 
-def login_vk() -> (HTMLSession, str):
+def login_vk() -> Tuple[HTMLSession, str]:
     s3 = HTMLSession()
     i = 0
     to = ""
@@ -81,7 +82,6 @@ def login_vk() -> (HTMLSession, str):
         if i == 0:
             to = find_to_parameter(r3.text)
         d["to"] = to
-        print(d)
         url = "https://login.vk.com/?act=login"
         r3 = s3.post(url, data=d)
         # print(r3.headers)
@@ -91,8 +91,7 @@ def login_vk() -> (HTMLSession, str):
             uid = findValue(r3.text, "uid")
             return s3, uid
         to = find_to_parameter(s3.get("https://vk.com/im").text.replace("\\", ""))
-    print(f"loginVk() didnot work, attemps: {i}")
-    return (None, None)
+    return HTMLSession(), ""
 
 
 # loginVK()
@@ -114,6 +113,8 @@ def make_post(session, uid, hash, message="testing"):
 
 @admin_only
 async def post(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message is None or update.message.text is None:
+        raise ValueError("Missing message or text")
     if len(update.message.text.split(" ")) > 1:
         errorLogger = context.application.bot_data["errorLogger"]
         message = update.message.text

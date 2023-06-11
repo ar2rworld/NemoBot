@@ -8,7 +8,7 @@ from pymongo.errors import ConnectionFailure
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from src.decorators.adminOnly import adminOnly
+from src.decorators.adminOnly import admin_only
 
 
 def get_client():
@@ -32,7 +32,7 @@ def get_client():
         raise e
 
 
-@adminOnly
+@admin_only
 async def check_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     client = None
     try:
@@ -77,7 +77,7 @@ def load_collection(db, collection):
         raise e
 
 
-@adminOnly
+@admin_only
 async def upsert_to_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         tokens = update.message.text.split(" ")
@@ -93,7 +93,7 @@ async def upsert_to_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.chat.send_message(str(e))
 
 
-@adminOnly
+@admin_only
 async def accessMongo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # /mongo action collectionName json
     try:
