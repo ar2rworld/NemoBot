@@ -1,10 +1,10 @@
 import logging
-import socketserver
 from http.server import BaseHTTPRequestHandler
 from os import getenv
-from typing import Tuple
+from typing import Tuple, Any
 
 from src.notificator.send_notifications import send_notifications
+from src.notificator.server import MyHttpServer
 from src.notificator.xmlParser import xmlParser
 from src.utils.parseUrl import parseUrl
 
@@ -14,17 +14,17 @@ serverLogger = logging.getLogger("serverLogger")
 class Handler(BaseHTTPRequestHandler):
     def __init__(
         self,
-        request: bytes,
+        request: Any,
         client_address: Tuple[str, int],
-        server: socketserver.BaseServer,
+        server: MyHttpServer,
     ) -> None:
         super().__init__(request, client_address, server)
 
-    def do_POST(self):
+    async def do_POST(self):
         try:
             content_length = int(self.headers["Content-Length"])
             result = xmlParser(self.rfile, content_length)
-            send_notifications(result, self.server.telegramDispatcher, self.server.db)
+            await send_notifications(result, self.server.application, self.server.db)
 
             self.send_response(200)
             self.end_headers()
@@ -34,7 +34,7 @@ class Handler(BaseHTTPRequestHandler):
 
     async def do_GET(self):
         try:
-            await self.server.telegramDispatcher.bot.send_message(
+            await self.server.application.bot.send_message(
                 getenv("TG_MY_ID"),
                 f"I got a message from {self.client_address}(might be important):\n{self.requestline}",
                 disable_notification=True,
@@ -42,9 +42,9 @@ class Handler(BaseHTTPRequestHandler):
             if "?" in self.requestline:
                 temp = self.requestline.split("?")[1]
                 obj = parseUrl(temp[: temp.index(" ")])
-                channelId = obj["hub.topic"].split("channel_id")[1][3:]
+                channel_id = obj["hub.topic"].split("channel_id")[1][3:]
 
-                find_obj = {"channelId": channelId}
+                find_obj = {"channelId": channel_id}
                 if obj.get("hub.verify_token"):
                     find_obj["verify_token"] = obj["hub.verify_token"]
                 channels = self.server.db["channelsToWatch"].find(find_obj)
