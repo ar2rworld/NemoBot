@@ -1,6 +1,5 @@
 import json
 import logging
-from os import getenv
 
 from pymongo import MongoClient
 from pymongo.database import Database
@@ -9,22 +8,21 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from src.decorators.adminOnly import admin_only
+from src.utils.other import get_environment_vars
 
 
 def get_client():
     error_logger = logging.getLogger("errorLogger")
 
-    mongo_host = getenv("MONGO_HOST")
-    mongo_port = getenv("MONGO_PORT")
-    mongo_dbname = getenv("MONGO_DBNAME")
-    if mongo_host is None or mongo_port is None or mongo_dbname is None:
-        raise ValueError("Missing MONGO_HOST or MONGO_PORT or MONGO_DBNAME is the environment")
-    connection_string = f'mongodb://{getenv("MONGO_HOST")}:{getenv("MONGO_PORT")}'
+    mongo_host, mongo_port, mongo_dbname = get_environment_vars("MONGO_HOST", "MONGO_PORT", "MONGO_DBNAME")
+    connection_string = f'mongodb://{mongo_host}:{mongo_port}'
     try:
+        mongo_initdb_root_username, mongo_initdb_root_password = get_environment_vars(
+            "MONGO_INITDB_ROOT_USERNAME", "MONGO_INITDB_ROOT_PASSWORD")
         client = MongoClient(
             connection_string,
-            username=getenv("MONGO_INITDB_ROOT_USERNAME"),
-            password=getenv("MONGO_INITDB_ROOT_PASSWORD"),
+            username=mongo_initdb_root_username,
+            password=mongo_initdb_root_password,
         )
 
         if client[mongo_dbname].command("ping"):
@@ -101,7 +99,7 @@ async def upsert_to_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 @admin_only
-async def accessMongo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def access_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # /mongo action collectionName json
     if update.message is None or update.message.text is None:
         raise ValueError("Missing message or text")
