@@ -19,6 +19,6 @@ def xmlParser(file, content_length):
             logger.info("Finished parsing: " + title + " " + link + " " + channelId)
             return (link, title, channelId)
         else:
-            return ("no <entry> element in DOM",)
+            return ("no <entry> element in DOM", "", "")
     except Exception as e:
-        return (f"Error occured while xml parsing:\n{e}",)
+        return (f"Error occured while xml parsing:\n{e}", "", "")

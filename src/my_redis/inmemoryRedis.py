@@ -3,8 +3,8 @@ from typing import List
 
 class InmemoryRedis:
     def __init__(self, redis_host, redis_port) -> None:
-        self.host = redis_host
-        self.port = redis_port
+        self.host: str = redis_host
+        self.port: int = redis_port
         self.dict = {}
 
     def ping(self) -> bool:

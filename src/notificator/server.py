@@ -1,7 +1,6 @@
 import logging
 from collections.abc import Callable
 from http.server import HTTPServer
-from socketserver import BaseRequestHandler
 from typing import Tuple
 
 from pymongo.database import Database

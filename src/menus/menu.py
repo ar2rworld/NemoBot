@@ -31,12 +31,12 @@ class Menu:
 
     def add_screen_obj(self, screen_obj: dict) -> None:
         screen_obj["menuName"] = self.name
-        if screen_obj.get("name") is "":
+        if screen_obj.get("name") == "":
             raise Exception(f"Screen name is not set:\n{screen_obj}")
         if self.screens.get(screen_obj.get("name")):
             raise Exception(f"Screen with name {screen_obj.get('name')} already exists")
         screen = Screen(screen_obj)
-        if self.firstScreenName is "":
+        if self.firstScreenName == "":
             self.firstScreenName = screen_obj.get("name", "")
         else:
             first_screen_button = [

@@ -13,7 +13,7 @@ async def send_notifications(
     ],
     application: Application,
     db: Database,
-):
+) -> None:
     if len(video) == 3:
         try:
             link, title, channel_id = video
@@ -49,5 +49,4 @@ async def send_notifications(
     else:
         # something went wrong, error message in (error, )
         error_message = f"Invalid tokens while sending notifications:{video}"
-        print(error_message)
         await application.bot.send_message(getenv("TG_MY_ID"), error_message)

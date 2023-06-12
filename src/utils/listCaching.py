@@ -19,6 +19,7 @@ def push_word(r, context: ContextTypes.DEFAULT_TYPE, list_name, word: str) -> in
     context.application.bot_data[list_name].add(encoded_word)
     return r.lpush(list_name, encoded_word)
 
+
 def remove_from_list(
     r: InmemoryRedis, context: ContextTypes.DEFAULT_TYPE, list_name: str, key: str, n: int = 100
 ) -> int:

@@ -1,7 +1,8 @@
 import logging
 from http.server import BaseHTTPRequestHandler
 from os import getenv
-from typing import Tuple, Any
+from typing import Any
+from typing import Tuple
 
 from src.notificator.send_notifications import send_notifications
 from src.notificator.server import MyHttpServer
