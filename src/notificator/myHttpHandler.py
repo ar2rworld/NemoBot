@@ -19,6 +19,7 @@ class Handler(BaseHTTPRequestHandler):
         server: MyHttpServer,
     ) -> None:
         super().__init__(request, client_address, server)
+        self.server: MyHttpServer = server
 
     async def do_POST(self):
         try:

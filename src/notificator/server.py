@@ -4,27 +4,27 @@ from http.server import HTTPServer
 from socketserver import BaseRequestHandler
 from typing import Tuple
 
+from pymongo.database import Database
+from telegram.ext import Application
+
 from src.notificator.myHttpHandler import Handler
 
 
-class myHTTPServer(HTTPServer):
+class MyHttpServer(HTTPServer):
     def __init__(
         self,
         application,
         db,
         server_address: Tuple[str, int],
-        RequestHandlerClass: Callable[..., BaseRequestHandler],
+        RequestHandlerClass: Callable[..., Handler],
         bind_and_activate: bool = ...,
     ) -> None:
         super().__init__(server_address, RequestHandlerClass, bind_and_activate=bind_and_activate)
-        self.application = application
-        self.db = db
+        self.application: Application = application
+        self.db: Database = db
 
 
-def runServer(application, db, host, port):
-    with myHTTPServer(application, db, (host, int(port)), Handler) as httpd:
+def run_server(application, db, host, port):
+    with MyHttpServer(application, db, (host, int(port)), Handler) as httpd:
         logging.info(f"serving at port: {port}")
         httpd.serve_forever()
-
-
-# runServer(d)
