@@ -4,53 +4,60 @@ from random import random as rnd
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from src.utils.listCaching import load_list
+from src.utils.listCaching import load_list, push_word
 from src.utils.listCaching import remove_from_list
 
 
 async def kolonka(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message is None or update.message.chat is None:
+        raise ValueError("Missing message or chat")
     await update.message.chat.send_message("Postaviat!" if rnd() >= 0.5 else "Net, ne postaviat.")
 
 
 async def osuzhdau(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    calling204Phrases = context.application.bot_data["calling204Phrases"]
+    if update.message is None or update.message.chat is None or update.message.text is None:
+        raise ValueError("Missing message or chat or text")
+    calling204_phrases = context.application.bot_data["calling204Phrases"]
     mat = context.application.bot_data["mat"]
-    errorLogger = context.application.bot_data["errorLogger"]
-    osuzhdatN = 0
+    error_logger = context.application.bot_data["errorLogger"]
+    osuzhdat_n = 0
     try:
-        update.message.text.lower()
+        message: str = update.message.text.lower()
         for m in mat:
             try:
                 if re.match(r".*" + str(m).lower() + ".*", message):
-                    osuzhdatN += 1
+                    osuzhdat_n += 1
             except Exception as e:
-                errorLogger.error(e)
+                error_logger.error(e)
 
-        if osuzhdatN != 0:
-            await update.message.chat.send_message("ocyждaю" + ("." * osuzhdatN if osuzhdatN > 0 else 1))
+        if osuzhdat_n != 0:
+            dots = ("." * osuzhdat_n if osuzhdat_n > 0 else 1)
+            await update.message.chat.send_message(f"ocyждaю {dots}")
         if re.match(r".*calling204.*", message):
-            if len(calling204Phrases) == 0:
+            if len(calling204_phrases) == 0:
                 context.application.bot_data["calling204Phrases"] = {"Haha, man, your are the best!"}
-            n = int(rnd() * len(calling204Phrases))
+            n = int(rnd() * len(calling204_phrases))
             phrase = ""
-            for i, key in enumerate(calling204Phrases):
+            for i, key in enumerate(calling204_phrases):
                 if n == i:
                     phrase = key
                     break
             await update.message.chat.send_message(phrase)
     except Exception as e:
-        print("Exception occured:", e)
+        print("Exception occurred:", e)
 
 
 async def osuzhdat(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message is None or update.message.chat is None or update.message.text is None:
+        raise ValueError("Missing message or chat or text")
     tokens = update.message.text.split(" ")
     r = context.application.bot_data["r"]
 
     if len(tokens) == 2 and tokens[1] != "-p" and tokens[1] != "-a":
-        n = load_list(r, context, "mat", tokens[1])
+        n = push_word(r, context, "mat", tokens[1])
         await update.message.chat.send_message("Got it! Let's make community better together!(words : " + str(n) + ")")
     elif len(tokens) > 2 and tokens[1] == "-p":
-        n = load_list(r, context, "mat", " ".join(tokens[2:]).lower())
+        n = push_word(r, context, "mat", " ".join(tokens[2:]).lower())
         await update.message.chat.send_message("Got your phrase, let's osuzhdat together!(" + str(n) + ")")
     elif len(tokens) == 2 and tokens[1] == "-a":
         await update.message.chat.send_message(
@@ -61,8 +68,10 @@ async def osuzhdat(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def neosuzhdat(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message is None or update.message.chat is None or update.message.text is None:
+        raise ValueError("Missing message or chat or text")
     r = context.application.bot_data["r"]
-    load_list(r, context, "mat")
+    load_list(r, "mat")
     tokens = update.message.text.split(" ")
 
     if len(tokens) == 2 and tokens[1] != "-p":
@@ -75,25 +84,30 @@ async def neosuzhdat(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     else:
         await update.message.chat.send_message("I can't understan you, check my /help=(")
-    context.application.bot_data["mat"] = load_list(r, context, "mat")
+    context.application.bot_data["mat"] = load_list(r, "mat")
 
 
 async def tvoichlen(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message is None or update.message.chat is None:
+        raise ValueError("Missing message or chat")
     await update.message.chat.send_message("Moi chlen!" if rnd() >= 0.5 else "Tvoi chlen!")
 
 
 async def test(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message is None or update.message.chat is None:
+        raise ValueError("Missing message or chat or text")
     await update.message.chat.send_message("test command")
 
 
-async def addCalling204Help(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def add_calling_204_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message is None or update.message.chat is None or update.message.text is None:
+        raise ValueError("Missing message or chat or text")
     tokens = update.message.text.split(" ")
     if len(tokens) > 1:
         r = context.application.bot_data["r"]
         phrase = " ".join(tokens[1:])
-        result = load_list(r, context, "calling204Phrases", phrase)
+        result = push_word(r, context, "calling204Phrases", phrase)
         await update.message.chat.send_message("good: " + str(result))
         context.application.bot_data["calling204Phrases"].add(phrase)
-        print("addCalling204Phrases len: " + str(result))
     else:
         await update.message.chat.send_message("Invalid args!")
