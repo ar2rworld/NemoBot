@@ -40,7 +40,8 @@ from src.utils.alivePhrases import add_alive_phrases
 from src.utils.echo import add_echo_phrase
 from src.utils.echo_commands import my_telegram_id
 from src.utils.listCaching import load_list
-from src.utils.other import pick_random_from_list, get_environment_vars
+from src.utils.other import get_environment_vars
+from src.utils.other import pick_random_from_list
 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -124,7 +125,6 @@ def main():
     if getenv("DEBUG"):
         r = InmemoryRedis(redis_host, int(redis_port))
     else:
-
         r = redis.Redis(redis_host, int(redis_port))
         try:
             if r.ping():
