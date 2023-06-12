@@ -46,7 +46,8 @@ ignore = [
   "RUF002",  # Docstring contains ambiguous unicode character
   "RUF003",  # Comment contains ambiguous unicode character
   "UP006",  # Use `list` instead of `List` for type annotations
-  "UP007"  # Use `X | Y` for type annotations
+  "UP007",  # Use `X | Y` for type annotations
+  "S101",  # assert usage
 ]
 line-length = 120
 select = [
