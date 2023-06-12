@@ -4,7 +4,8 @@ from random import random as rnd
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from src.utils.listCaching import load_list, push_word
+from src.utils.listCaching import load_list
+from src.utils.listCaching import push_word
 from src.utils.listCaching import remove_from_list
 
 
@@ -31,7 +32,7 @@ async def osuzhdau(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 error_logger.error(e)
 
         if osuzhdat_n != 0:
-            dots = ("." * osuzhdat_n if osuzhdat_n > 0 else 1)
+            dots = "." * osuzhdat_n if osuzhdat_n > 0 else 1
             await update.message.chat.send_message(f"ocyждaю {dots}")
         if re.match(r".*calling204.*", message):
             if len(calling204_phrases) == 0:
