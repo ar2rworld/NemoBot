@@ -44,10 +44,14 @@ from src.utils.other import pickRandomFromList
 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.message is None or update.message.chat is None:
+        raise ValueError("Missing message or chat")
     await update.message.chat.send_message("start command")
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.message is None or update.message.chat is None:
+        raise ValueError("Missing message or chat")
     await update.message.chat.send_message(
         """
 /postaviat
@@ -73,6 +77,8 @@ Admin commands:
 
 
 async def test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.message is None or update.message.chat is None:
+        raise ValueError("Missing message or chat")
     await update.message.chat.send_message("yeah, this is a test command")
 
 
@@ -167,7 +173,9 @@ def main():
     app.add_handler(CommandHandler("addAlivePhrases", add_alive_phrases))
     app.add_handler(MessageHandler(filters.TEXT, echoHandler))
 
-    def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        if update.callback_query is None or update.callback_query.data is None:
+            raise ValueError("Missing callback_query or data")
         func = context.application.bot_data["callbackQueryHandlers"][update.callback_query.data]
         if not func:
             raise Exception(f'Callback query handler: "{update.callback_query.data}" not found')
@@ -176,7 +184,11 @@ def main():
     app.add_handler(CallbackQueryHandler(callback_query_handler))
     app.add_error_handler(error)
 
-    _thread.start_new_thread(runServer, (app, db, getenv("NOTIFICATOR_HOST"), getenv("NOTIFICATOR_PORT")))
+    notificator_host, notificator_port = get_environment_vars("NOTIFICATOR_HOST", "NOTIFICATOR_PORT")
+    _thread.start_new_thread(run_server, (app, db, notificator_host, notificator_port))
+
+    if app.job_queue is None:
+        raise ValueError("Missing job_queue in application")
     app.job_queue.run_daily(lambda x: subscribe(app), datetime.time(0, 0))
 
     async def send_alive_message(context: ContextTypes.DEFAULT_TYPE):
