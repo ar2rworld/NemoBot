@@ -15,10 +15,11 @@ def get_client():
     error_logger = logging.getLogger("errorLogger")
 
     mongo_host, mongo_port, mongo_dbname = get_environment_vars("MONGO_HOST", "MONGO_PORT", "MONGO_DBNAME")
-    connection_string = f'mongodb://{mongo_host}:{mongo_port}'
+    connection_string = f"mongodb://{mongo_host}:{mongo_port}"
     try:
         mongo_initdb_root_username, mongo_initdb_root_password = get_environment_vars(
-            "MONGO_INITDB_ROOT_USERNAME", "MONGO_INITDB_ROOT_PASSWORD")
+            "MONGO_INITDB_ROOT_USERNAME", "MONGO_INITDB_ROOT_PASSWORD"
+        )
         client = MongoClient(
             connection_string,
             username=mongo_initdb_root_username,

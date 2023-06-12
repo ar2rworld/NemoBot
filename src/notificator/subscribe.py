@@ -2,6 +2,8 @@ import logging
 from time import sleep
 
 import requests
+from telegram import Update
+from telegram.ext import ContextTypes
 
 from src.decorators.adminOnly import admin_only
 
@@ -26,13 +28,13 @@ async def subscribe(app):
             count = 0
             for channel in channels:
                 count += 1
-                channelId = channel["channelId"]
-                if channelId:
+                channel_id = channel["channelId"]
+                if channel_id:
                     params = (
                         "/subscribe?hub.mode=subscribe"
                         + f"&hub.callback={callbackUrl}"
                         + "&hub.verify=async"
-                        + f"&hub.topic=https://www.youtube.com/xml/feeds/videos.xml?channel_id={channelId}"
+                        + f"&hub.topic=https://www.youtube.com/xml/feeds/videos.xml?channel_id={channel_id}"
                     )
                     if channel.get("verify_token"):
                         params += f"&hub.verify_token={channel.get('verify_token')}"
@@ -41,15 +43,16 @@ async def subscribe(app):
                         headers={"Content-Type": "application/x-www-form-urlencoded"},
                     )
                     if result.status_code != 202:
-                        out.append((channelId, result.status_code, result.text))
+                        out.append((channel_id, result.status_code, result.text))
                 else:
                     out.append(("", "invalid channelId"))
                     raise Exception("invalid channelId provided for subscribe")
             if len(out) > 0:
                 logging.error(f"Number of invalid channels: {len(out)}")
+                errors = [f"{str(x)}\n" for x in out]
                 await app.bot.send_message(
                     tg_my_id,
-                    "I got some problems while subscribing for following channels:\n" + [str(x) + "\n" for x in out],
+                    f"I got some problems while subscribing for following channels:\n{errors}",
                 )
             else:
                 logging.info(f"Finished subscribe, fetched : {count}")
@@ -62,5 +65,5 @@ async def subscribe(app):
 
 
 @admin_only
-async def subscribeToChannels(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def subscribe_to_channels(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await subscribe(context.application)
