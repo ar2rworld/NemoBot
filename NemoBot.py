@@ -15,32 +15,32 @@ from telegram.ext import ContextTypes
 from telegram.ext import MessageHandler
 from telegram.ext import filters
 
-from src.handlers.echoHandler import echoHandler
+from src.handlers.echoHandler import echo_handler
 
 # local functions
-from src.handlers.room204 import addCalling204Help
+from src.handlers.room204 import add_calling_204_help
 from src.handlers.room204 import kolonka
 from src.handlers.room204 import neosuzhdat
 from src.handlers.room204 import osuzhdat
 from src.handlers.room204 import tvoichlen
 from src.handlers.send_message import send_message
 from src.menus.menu import find_menu_in_context
-from src.mongo.mongo_connection import accessMongo
+from src.mongo.mongo_connection import access_mongo
 from src.mongo.mongo_connection import check_mongo
 from src.mongo.mongo_connection import get_client
 from src.mongo.mongo_connection import load_collection
 from src.mongo.mongo_connection import upsert_to_mongo
 from src.my_menus.requestAccessMenu import setupRequestAccessMenu
 from src.my_redis.inmemoryRedis import InmemoryRedis
-from src.notificator.server import runServer
+from src.notificator.server import run_server
 from src.notificator.subscribe import subscribe
-from src.notificator.subscribe import subscribeToChannels
+from src.notificator.subscribe import subscribe_to_channels
 from src.socials_interactions.socials import post
 from src.utils.alivePhrases import add_alive_phrases
 from src.utils.echo import add_echo_phrase
 from src.utils.echo_commands import my_telegram_id
 from src.utils.listCaching import load_list
-from src.utils.other import pickRandomFromList
+from src.utils.other import pick_random_from_list, get_environment_vars
 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -82,10 +82,10 @@ async def test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.chat.send_message("yeah, this is a test command")
 
 
-def error(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def error(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     error_logger = context.application.bot_data["errorLogger"]
     error_logger.error(update)
-    error_logger.error(context.error)
+    await error_logger.error(context.error)
 
 
 def main():
@@ -114,15 +114,18 @@ def main():
     server_logger_handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
     server_logger.addHandler(server_logger_handler)
 
-    app = Application.builder().token(getenv("NEMOBOTTOKEN")).build()
+    nemobottoken = get_environment_vars("NEMOBOTTOKEN")[0]
+    app = Application.builder().token(nemobottoken).build()
 
-    db = get_client()[getenv("MONGO_DBNAME")]
+    db = get_client()[get_environment_vars("MONGO_DBNAME")[0]]
 
+    redis_host, redis_port = get_environment_vars("REDIS_HOST", "REDIS_PORT")
     r = None
     if getenv("DEBUG"):
-        r = InmemoryRedis(getenv("REDIS_HOST"), getenv("REDIS_PORT"))
+        r = InmemoryRedis(redis_host, int(redis_port))
     else:
-        r = redis.Redis(getenv("REDIS_HOST"), int(getenv("REDIS_PORT")))
+
+        r = redis.Redis(redis_host, int(redis_port))
         try:
             if r.ping():
                 main_logger.info("Redis is ready")
@@ -140,10 +143,10 @@ def main():
     app.bot_data["hubUrl"] = getenv("HUBURL")
     app.bot_data["tg_my_id"] = getenv("TG_MY_ID")
     app.bot_data["adminId"] = getenv("TG_MY_ID")
-    app.bot_data["calling204Phrases"] = set(load_list(r, context=None, list_name="calling204Phrases"))
+    app.bot_data["calling204Phrases"] = set(load_list(r, "calling204Phrases"))
     app.bot_data["echoPhrases"] = load_collection(db, "echoPhrases")
     app.bot_data["alivePhrases"] = load_collection(db, "alivePhrases") or [{"phrase": "I am alive"}]
-    app.bot_data["mat"] = set(load_list(r, context=None, list_name="mat"))
+    app.bot_data["mat"] = set(load_list(r, "mat"))
     app.bot_data["botChannel"] = getenv("BOTCHANNEL")
     app.bot_data["botGroup"] = getenv("BOTGROUP")
     app.bot_data["callbackQueryHandlers"] = {}
@@ -161,17 +164,17 @@ def main():
     app.add_handler(CommandHandler("osuzhdat", osuzhdat))
     app.add_handler(CommandHandler("neosuzhdat", neosuzhdat))
     app.add_handler(CommandHandler("my_telegram_id", my_telegram_id))
-    app.add_handler(CommandHandler("addCalling204Help", addCalling204Help))
+    app.add_handler(CommandHandler("addCalling204Help", add_calling_204_help))
     app.add_handler(CommandHandler("test", test))
     app.add_handler(CommandHandler("post", post))
     app.add_handler(CommandHandler("send_message", send_message))
-    app.add_handler(CommandHandler("accessMongo", accessMongo))
+    app.add_handler(CommandHandler("accessMongo", access_mongo))
     app.add_handler(CommandHandler("checkMongo", check_mongo))
     app.add_handler(CommandHandler("upsertToMongo", upsert_to_mongo))
-    app.add_handler(CommandHandler("subscribeToChannels", subscribeToChannels))
+    app.add_handler(CommandHandler("subscribeToChannels", subscribe_to_channels))
     app.add_handler(CommandHandler("addEchoPhrase", add_echo_phrase))
     app.add_handler(CommandHandler("addAlivePhrases", add_alive_phrases))
-    app.add_handler(MessageHandler(filters.TEXT, echoHandler))
+    app.add_handler(MessageHandler(filters.TEXT, echo_handler))
 
     async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         if update.callback_query is None or update.callback_query.data is None:
@@ -179,7 +182,7 @@ def main():
         func = context.application.bot_data["callbackQueryHandlers"][update.callback_query.data]
         if not func:
             raise Exception(f'Callback query handler: "{update.callback_query.data}" not found')
-        func(update, context)
+        await func(update, context)
 
     app.add_handler(CallbackQueryHandler(callback_query_handler))
     app.add_error_handler(error)
@@ -201,7 +204,7 @@ def main():
         if not getenv("DEBUG"):
             commits = subprocess.check_output(["git", "log"]).decode("utf-8")
             last_commit = commits[commits.find("Author", 1) : commits.find("commit", 1)].replace("\n", "")
-            phrase = pickRandomFromList(app.bot_data["alivePhrases"])["phrase"]
+            phrase = pick_random_from_list(app.bot_data["alivePhrases"])["phrase"]
             channel_post = f"{last_commit}\n{phrase}"
             await app.bot.send_message(app.bot_data["botChannel"], channel_post)
             await app.bot.send_message(app.bot_data["botGroup"], phrase)
