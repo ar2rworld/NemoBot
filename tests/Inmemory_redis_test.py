@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from src.my_redis.inmemoryRedis import InmemoryRedis
+from src.my_redis.inmemory_redis import InmemoryRedis
 
 
 class TestInmemoryRedis(unittest.TestCase):

@@ -6,8 +6,8 @@ from typing import Tuple
 
 from src.notificator.send_notifications import send_notifications
 from src.notificator.server import MyHttpServer
-from src.notificator.xmlParser import xmlParser
-from src.utils.parseUrl import parseUrl
+from src.notificator.xml_parser import xmlParser
+from src.utils.parse_url import parse_url
 
 serverLogger = logging.getLogger("serverLogger")
 
@@ -43,7 +43,7 @@ class Handler(BaseHTTPRequestHandler):
             )
             if "?" in self.requestline:
                 temp = self.requestline.split("?")[1]
-                obj = parseUrl(temp[: temp.index(" ")])
+                obj = parse_url(temp[: temp.index(" ")])
                 channel_id = obj["hub.topic"].split("channel_id")[1][3:]
 
                 find_obj = {"channelId": channel_id}

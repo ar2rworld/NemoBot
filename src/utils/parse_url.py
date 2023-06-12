@@ -1,4 +1,4 @@
-def parseUrl(url):
+def parse_url(url):
     obj = {}
     tokens = url.split("&")
     for token in tokens:

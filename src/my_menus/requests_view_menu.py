@@ -5,7 +5,7 @@ from src.menus.menu import Menu
 
 
 # menu to view requests and approve/deny them, check TODO
-def setupRequestsViewMenu(app: Application, db: Database):
+def setup_requests_view_menu(app: Application, db: Database):
     menu = Menu("requestsView", command="requestsView", application=app, db=db)
     requestCommands = db.requestedCommands.find({"status": 1})
     menu.add_screen_obj(

@@ -4,9 +4,9 @@ from random import random as rnd
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from src.utils.listCaching import load_list
-from src.utils.listCaching import push_word
-from src.utils.listCaching import remove_from_list
+from src.utils.list_caching import load_list
+from src.utils.list_caching import push_word
+from src.utils.list_caching import remove_from_list
 
 
 async def kolonka(update: Update, context: ContextTypes.DEFAULT_TYPE):

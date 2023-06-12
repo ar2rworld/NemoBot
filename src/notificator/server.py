@@ -6,7 +6,7 @@ from typing import Tuple
 from pymongo.database import Database
 from telegram.ext import Application
 
-from src.notificator.myHttpHandler import Handler
+from src.notificator.my_http_handler import Handler
 
 
 class MyHttpServer(HTTPServer):

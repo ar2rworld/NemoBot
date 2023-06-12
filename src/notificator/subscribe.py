@@ -5,7 +5,7 @@ import requests
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from src.decorators.adminOnly import admin_only
+from src.decorators.admin_only import admin_only
 
 logging.basicConfig(filename="subscribe.log", filemode="w", level=logging.DEBUG)
 

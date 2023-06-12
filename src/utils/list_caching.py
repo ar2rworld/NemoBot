@@ -2,7 +2,7 @@ from typing import List
 
 from telegram.ext import ContextTypes
 
-from src.my_redis.inmemoryRedis import InmemoryRedis
+from src.my_redis.inmemory_redis import InmemoryRedis
 
 
 def load_list(r, list_name) -> List[str]:

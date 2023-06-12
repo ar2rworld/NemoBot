@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from src.decorators.adminOnly import admin_only
+from src.decorators.admin_only import admin_only
 
 
 @admin_only

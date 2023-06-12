@@ -15,7 +15,7 @@ from telegram.ext import ContextTypes
 from telegram.ext import MessageHandler
 from telegram.ext import filters
 
-from src.handlers.echoHandler import echo_handler
+from src.handlers.echo_handler import echo_handler
 
 # local functions
 from src.handlers.room204 import add_calling_204_help
@@ -30,29 +30,31 @@ from src.mongo.mongo_connection import check_mongo
 from src.mongo.mongo_connection import get_client
 from src.mongo.mongo_connection import load_collection
 from src.mongo.mongo_connection import upsert_to_mongo
-from src.my_menus.requestAccessMenu import setupRequestAccessMenu
-from src.my_redis.inmemoryRedis import InmemoryRedis
+from src.my_menus.request_access_menu import setupRequestAccessMenu
+from src.my_redis.inmemory_redis import InmemoryRedis
 from src.notificator.server import run_server
 from src.notificator.subscribe import subscribe
 from src.notificator.subscribe import subscribe_to_channels
 from src.socials_interactions.socials import post
-from src.utils.alivePhrases import add_alive_phrases
+from src.utils.alive_phrases import add_alive_phrases
 from src.utils.echo import add_echo_phrase
 from src.utils.echo_commands import my_telegram_id
-from src.utils.listCaching import load_list
+from src.utils.list_caching import load_list
 from src.utils.other import get_environment_vars
 from src.utils.other import pick_random_from_list
 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is None or update.message.chat is None:
-        raise ValueError("Missing message or chat")
+        msg = "Missing message or chat"
+        raise ValueError(msg)
     await update.message.chat.send_message("start command")
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is None or update.message.chat is None:
-        raise ValueError("Missing message or chat")
+        msg = "Missing message or chat"
+        raise ValueError(msg)
     await update.message.chat.send_message(
         """
 /postaviat
@@ -79,7 +81,8 @@ Admin commands:
 
 async def test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is None or update.message.chat is None:
-        raise ValueError("Missing message or chat")
+        msg = "Missing message or chat"
+        raise ValueError(msg)
     await update.message.chat.send_message("yeah, this is a test command")
 
 
@@ -89,7 +92,7 @@ async def error(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     await error_logger.error(context.error)
 
 
-def main():
+def main() -> None:
     xml_parser_logger = logging.getLogger("xmlParser")
     xml_parser_logger.setLevel(logging.INFO)
     xml_parser_handler = logging.FileHandler("xmlBodyLocal.log", "a", "utf-8")
@@ -177,10 +180,12 @@ def main():
 
     async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         if update.callback_query is None or update.callback_query.data is None:
-            raise ValueError("Missing callback_query or data")
+            msg = "Missing callback_query or data"
+            raise ValueError(msg)
         func = context.application.bot_data["callbackQueryHandlers"][update.callback_query.data]
         if not func:
-            raise Exception(f'Callback query handler: "{update.callback_query.data}" not found')
+            msg = f'Callback query handler: "{update.callback_query.data}" not found'
+            raise Exception(msg)
         await func(update, context)
 
     app.add_handler(CallbackQueryHandler(callback_query_handler))
@@ -190,7 +195,8 @@ def main():
     _thread.start_new_thread(run_server, (app, db, notificator_host, notificator_port))
 
     if app.job_queue is None:
-        raise ValueError("Missing job_queue in application")
+        msg = "Missing job_queue in application"
+        raise ValueError(msg)
     app.job_queue.run_daily(lambda x: subscribe(app), datetime.time(0, 0))
 
     async def send_alive_message(context: ContextTypes.DEFAULT_TYPE):

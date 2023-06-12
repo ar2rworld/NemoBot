@@ -6,7 +6,7 @@ from src.socials_interactions.socials import dec
 
 
 class TestDec(unittest.TestCase):
-    def testDec(self):
+    def test_dec(self) -> None:
         params = "a=1&b=123&c=a1@><)- 1_"
         res = dec(params)
         assert res["a"] == "1", 'missing value "a"'
