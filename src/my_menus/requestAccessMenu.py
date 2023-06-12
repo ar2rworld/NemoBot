@@ -6,56 +6,61 @@ from telegram.ext import ContextTypes
 from src.menus.menu import Menu
 
 
-async def userInputEchoHandler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def user_input_echo_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message is None or update.message.from_user is None:
+        raise ValueError("Missing message or from_user")
     bot_data = context.application.bot_data
-    userInput = update.message.text
-    userId = update.message.from_user.id
+    user_input = update.message.text
+    user_id = update.message.from_user.id
     db = bot_data["db"]
-    errorLogger = bot_data["errorLogger"]
+    error_logger = bot_data["errorLogger"]
     try:
-        context.application.bot_data["echoHandlers"].pop(userId)
+        context.application.bot_data["echoHandlers"].pop(user_id)
     except KeyError:
-        errorLogger.error(f"No echoHandler for user {userId}")
-    menuObj = db.userInput.find_one({"userId": userId})
-    menu = bot_data[menuObj["menuName"]]
-    requestedCommand = menuObj.get("requestedCommand")
-    if not userInput:
-        menu.render_screen(userId, "emptyInputScreen")
+        error_logger.error(f"No echoHandler for user {user_id}")
+    menu_obj = db.userInput.find_one({"userId": user_id})
+    menu = bot_data[menu_obj["menuName"]]
+    requested_command = menu_obj.get("requestedCommand")
+    if not user_input:
+        menu.render_screen(user_id, "emptyInputScreen")
         return
-    if not menuObj:
-        errorLogger.error(f"Cannot find userId {userId} in userInput")
+    if not menu_obj:
+        error_logger.error(f"Cannot find userId {user_id} in userInput")
+        return
     user = update.message.from_user
-    userObj = {
+    user_obj = {
         "link": user.link,
         "name": user.name,
         "fullName": user.full_name,
         "username": user.username,
     }
-    db.users.update_one({"userId": userId}, {"$set": userObj}, upsert=True)
+    db.users.update_one({"userId": user_id}, {"$set": user_obj}, upsert=True)
     db.requestedCommands.update_one(
-        {"userId": userId, "requestedCommand": requestedCommand},
-        {"$set": {"userInput": userInput, "status": 1}},
+        {"userId": user_id, "requestedCommand": requested_command},
+        {"$set": {"userInput": user_input, "status": 1}},
         upsert=True,
     )
     await context.application.bot.send_message(
         bot_data["adminId"],
-        f"User {userId},{user.full_name},{user.username} requested {requestedCommand} with input:\n{userInput}",
+        f"User {user_id},{user.full_name},{user.username} requested {requested_command} with input:\n{user_input}",
     )
-    menu.render_screen(userId, "thankYouScreen")
+    menu.render_screen(user_id, "thankYouScreen")
 
 
-def authorizeAddEchoPhrase(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def authorize_add_echo_phrase(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.callback_query is None:
+        raise ValueError("Missing callback_query")
     bot_data = context.application.bot_data
-    userId = update.callback_query.from_user.id
+    user_id = update.callback_query.from_user.id
     menu = bot_data["findMenuInContext"](update, context)
-    context.application.bot_data["echoHandlers"][userId] = userInputEchoHandler
-    menuName = menu.render_screen(userId, "reasonScreen")
+    context.application.bot_data["echoHandlers"][user_id] = user_input_echo_handler
+    menu_name = menu.render_screen(user_id, "reasonScreen")
     db = bot_data["db"]
     db.userInput.update_one(
-        {"userId": update.callback_query.from_user.id},
+        {"user_id": update.callback_query.from_user.id},
         {
             "$set": {
-                "menuName": menuName,
+                "menuName": menu_name,
                 "status": 0,
                 "requestedCommand": "addEchoPhrase",
             }
@@ -64,18 +69,20 @@ def authorizeAddEchoPhrase(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-def upsertToMongoCallbackQuery(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def upsert_to_mongo_callback_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.callback_query is None:
+        raise ValueError("Missing callback_query")
     bot_data = context.application.bot_data
-    userId = update.callback_query.from_user.id
+    user_id = update.callback_query.from_user.id
     menu = bot_data["findMenuInContext"](update, context)
-    context.application.bot_data["echoHandlers"][userId] = userInputEchoHandler
-    menuName = menu.render_screen(userId, "reasonScreen")
+    context.application.bot_data["echoHandlers"][user_id] = user_input_echo_handler
+    menu_name = menu.render_screen(user_id, "reasonScreen")
     db = bot_data["db"]
     db.userInput.update_one(
         {"userId": update.callback_query.from_user.id},
         {
             "$set": {
-                "menuName": menuName,
+                "menu_name": menu_name,
                 "status": 0,
                 "requestedCommand": "upsertToMongo",
             }
@@ -85,15 +92,17 @@ def upsertToMongoCallbackQuery(update: Update, context: ContextTypes.DEFAULT_TYP
 
 
 def checkMongoCallbackQuery(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.callback_query is None:
+        raise ValueError("Missing callback_query")
     bot_data = context.application.bot_data
-    userId = update.callback_query.from_user.id
+    user_id = update.callback_query.from_user.id
     menu = bot_data["findMenuInContext"](update, context)
-    context.application.bot_data["echoHandlers"][userId] = userInputEchoHandler
-    menuName = menu.render_screen(userId, "reasonScreen")
+    context.application.bot_data["echoHandlers"][user_id] = user_input_echo_handler
+    menu_name = menu.render_screen(user_id, "reasonScreen")
     db = bot_data["db"]
     db.userInput.update_one(
-        {"userId": update.callback_query.from_user.id},
-        {"$set": {"menuName": menuName, "status": 0, "requestedCommand": "checkMongo"}},
+        {"userId": user_id},
+        {"$set": {"menuName": menu_name, "status": 0, "requestedCommand": "checkMongo"}},
         upsert=True,
     )
 
@@ -109,7 +118,7 @@ def setupRequestAccessMenu(app: Application, db: Database):
                     {
                         "text": "addEchoPhrase",
                         "callbackData": "addEchoPhraseCallbackQuery",
-                        "callbackFunction": authorizeAddEchoPhrase,
+                        "callbackFunction": authorize_add_echo_phrase,
                     },
                     {
                         "text": "checkMongo",
@@ -121,7 +130,7 @@ def setupRequestAccessMenu(app: Application, db: Database):
                     {
                         "text": "upsertToMongo",
                         "callbackData": "upsertToMongo",
-                        "callbackFunction": upsertToMongoCallbackQuery,
+                        "callbackFunction": upsert_to_mongo_callback_query,
                     }
                 ],
             ],
@@ -136,7 +145,7 @@ def setupRequestAccessMenu(app: Application, db: Database):
                     {
                         "text": "one button",
                         "callbackData": "addEchoPhraseCallbackQuery",
-                        "callbackFunction": authorizeAddEchoPhrase,
+                        "callbackFunction": authorize_add_echo_phrase,
                     }
                 ],
             ],

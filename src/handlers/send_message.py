@@ -6,6 +6,8 @@ from src.decorators.adminOnly import admin_only
 
 @admin_only
 async def send_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message is None or update.message.chat is None or update.message.text is None:
+        raise ValueError("Missing message or chat or text")
     tokens = update.message.text.split(" ")
     if len(tokens) > 2:
         await context.bot.send_message(chat_id=tokens[1], text=" ".join(tokens[2:]))

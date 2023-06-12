@@ -21,7 +21,7 @@ class Menu:
         self.name = name
         self.application = application
         self.currentScreen = None
-        self.firstScreenName = None
+        self.firstScreenName: str = ""
         self.currentScreenName = ""
         if command == "" or " " in command:
             raise Exception(f'Empty command or command contains spaces: "{command}"')
@@ -31,13 +31,13 @@ class Menu:
 
     def add_screen_obj(self, screen_obj: dict) -> None:
         screen_obj["menuName"] = self.name
-        if screen_obj.get("name") is None:
+        if screen_obj.get("name") is "":
             raise Exception(f"Screen name is not set:\n{screen_obj}")
         if self.screens.get(screen_obj.get("name")):
             raise Exception(f"Screen with name {screen_obj.get('name')} already exists")
         screen = Screen(screen_obj)
-        if self.firstScreenName is None:
-            self.firstScreenName = screen_obj.get("name")
+        if self.firstScreenName is "":
+            self.firstScreenName = screen_obj.get("name", "")
         else:
             first_screen_button = [
                 InlineKeyboardButton("go to first screen", callback_data=f"firstScreenButton_{self.name}")
@@ -57,6 +57,8 @@ class Menu:
 
     def create_callback(self) -> Callable[[Update, CallbackContext], Coroutine[Any, Any, None]]:
         async def callback(update: Update, context: CallbackContext) -> None:
+            if update.message is None or update.message.from_user is None:
+                raise ValueError("Missing message or from_user")
             db = self.db
             if len(self.screens.keys()) == 0:
                 raise Exception("0 Screens in menu")
@@ -83,15 +85,18 @@ class Menu:
 
         return callback
 
-    def render_screen(self, chat_id, index: str) -> str:
+    def render_screen(self, chat_id: str, index: str) -> str:
         screen = None
         if isinstance(index, str):
             screen = self.screens[index]
             if screen is None:
+                # TODO add ScreenNotExist error
                 raise Exception(f"Screen with name {index} does not exist")
         self.currentScreen = screen
         self.currentScreenName = screen.name
         user_menu = self.db.userMenus.find_one({"userId": chat_id})
+        if user_menu is None:
+            raise ValueError("Cannot find user_menu")
         message_id = user_menu["messageId"]
         self.application.bot.edit_message_text(
             chat_id=chat_id,
@@ -117,10 +122,12 @@ class Menu:
             raise Exception(f"Menu {self.name} already exists")
 
         def first_screen_button(update: Update, context: CallbackContext) -> None:
+            if update.callback_query is None or update.callback_query.from_user is None:
+                raise ValueError("Missing callback_query or from_user")
             bot_data = context.application.bot_data
             bot_data["findMenuInContext"] = find_menu_in_context
             menu = find_menu_in_context(update, context)
-            menu.render_screen(update.callback_query.from_user.id, self.firstScreenName)
+            menu.render_screen(str(update.callback_query.from_user.id), self.firstScreenName)
 
         self.application.bot_data["callbackQueryHandlers"]["firstScreenButton_" + self.name] = first_screen_button
 
@@ -128,11 +135,13 @@ class Menu:
         self.application.bot_data["mainLogger"].info(f"Built {self.name}")
         return self
 
-    def render_first_screen(self, chat_id) -> None:
+    def render_first_screen(self, chat_id: str) -> None:
         self.render_screen(chat_id, self.firstScreenName)
 
 
 def find_menu_in_context(update: Update, context: CallbackContext) -> Menu:
+    if update.callback_query is None or update.callback_query.data is None:
+        raise ValueError("Missing callback_query or data")
     menu_name = update.callback_query.data.split("_")[1]
     if menu_name not in context.application.bot_data:
         raise Exception("Menu does not exist")
