@@ -153,7 +153,6 @@ def main():
     app.bot_data["echoHandlers"] = {}
 
     setupRequestAccessMenu(app, db)
-    # setupRequestsViewMenu(app, db)
 
     app.bot_data["findMenuInContext"] = find_menu_in_context
 
