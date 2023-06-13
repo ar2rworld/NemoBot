@@ -32,7 +32,7 @@ from src.mongo.mongo_connection import load_collection
 from src.mongo.mongo_connection import upsert_to_mongo
 from src.my_menus.request_access_menu import setupRequestAccessMenu
 from src.my_redis.inmemory_redis import InmemoryRedis
-from src.notificator.server import run_server
+from src.notificator.run_server import run_server
 from src.notificator.subscribe import subscribe
 from src.notificator.subscribe import subscribe_to_channels
 from src.socials_interactions.socials import post
