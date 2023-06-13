@@ -1,16 +1,13 @@
-from typing import List
-
-
 class InmemoryRedis:
-    def __init__(self, redis_host, redis_port) -> None:
+    def __init__(self, redis_host: str, redis_port: int) -> None:
         self.host: str = redis_host
         self.port: int = redis_port
         self.dict = {}
 
     def ping(self) -> bool:
-        return self.host != "" and self.port != ""
+        return not self.host and not self.port
 
-    def lrange(self, list_name: str, begin: int, end: int) -> List[str]:
+    def lrange(self, list_name: str, begin: int, end: int) -> list[str]:
         if end == -1:
             end = len(self.dict.get(list_name, []))
             return self.dict.get(list_name, [])[begin:end]

@@ -1,12 +1,13 @@
-import os
 import unittest
 
 from src.my_redis.inmemory_redis import InmemoryRedis
+from src.utils.other import get_environment_vars
 
 
 class TestInmemoryRedis(unittest.TestCase):
-    def testBasics(self):
-        inr = InmemoryRedis(os.getenv("REDIS_HOST"), os.getenv("REDIS_PORT"))
+    def test_basics(self) -> None:
+        redis_host, redis_port = get_environment_vars("REDIS_HOST", "REDIS_PORT")
+        inr = InmemoryRedis(redis_host, int(redis_port))
         pong = inr.ping()
         assert pong is True
 
@@ -43,8 +44,8 @@ class TestInmemoryRedis(unittest.TestCase):
         test_lrange_of_all_items = inr.lrange("testList2", 0, -1)
         assert test_lrange_of_all_items == ["1", "2", "3", "4"]
 
-    def testEmptyCache(self):
-        inr = InmemoryRedis("some_host", "some_port")
+    def test_empty_cache(self) -> None:
+        inr = InmemoryRedis("some_host", 0)
         lrange_of_missing_list = inr.lrange("missingList", 0, -1)
         assert lrange_of_missing_list == []
 
