@@ -3,7 +3,7 @@ import os
 import twitter
 
 
-def get_twitter_api():
+def get_twitter_api() -> twitter.Api:
     api = twitter.Api(
         consumer_key=os.getenv("API_KEY"),
         consumer_secret=os.getenv("API_SECRET_KEY"),
@@ -13,7 +13,7 @@ def get_twitter_api():
     return api
 
 
-def twitter_post(message="Hello World from python-twitter!", media=""):
+def twitter_post(message: str="Hello World from python-twitter!", media: str="") -> None:
     api = get_twitter_api()
     if api.VerifyCredentials():
         api.PostUpdate(message, media=media)

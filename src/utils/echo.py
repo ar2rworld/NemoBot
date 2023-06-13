@@ -6,12 +6,13 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from src.decorators.admin_only import admin_only
+from src.errors.error_codes import MISSING_TEXT_OR_MESSAGE
 from src.mongo.mongo_connection import add_to_collection
 
 
-async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is None or update.message.text is None:
-        raise ValueError("Missing message or text")
+        raise ValueError(MISSING_TEXT_OR_MESSAGE)
     echo_phrases = context.application.bot_data["echoPhrases"]
     for phrase in echo_phrases:
         try:
@@ -21,14 +22,16 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             out = re.match(r".*" + reg + r".*", text)
             if out:
                 await update.message.chat.send_message(phrase["answer"])
-        except Exception as e:
-            context.application.bot_data["errorLogger"].error(e)
+        except ValueError as v:
+            context.application.bot_data["errorLogger"].error(v)
+        except KeyError as k:
+            context.application.bot_data["errorLogger"].error(k)
 
 
 @admin_only
-async def add_echo_phrase(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def add_echo_phrase(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is None or update.message.text is None:
-        raise ValueError("Missing message or text")
+        raise ValueError(MISSING_TEXT_OR_MESSAGE)
     message = update.message.text.replace("/addEchoPhrase ", "")
     if "|-|" in message:
         phrase, answer = message.split("|-|")

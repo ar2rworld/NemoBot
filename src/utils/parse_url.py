@@ -1,4 +1,4 @@
-def parse_url(url):
+def parse_url(url: str) -> dict:
     obj = {}
     tokens = url.split("&")
     for token in tokens:
@@ -11,5 +11,6 @@ def parse_url(url):
             attr = temp[0]
             obj[attr] = True
         else:
-            raise Exception("invalid tokens in parseUrl")
+            msg = "invalid tokens in parseUrl"
+            raise Exception(msg)
     return obj

@@ -1,13 +1,17 @@
 import json
 import logging
+from typing import Union
 
 from pymongo import MongoClient
 from pymongo.database import Database
 from pymongo.errors import ConnectionFailure
+from pymongo.results import InsertOneResult
+from pymongo.results import UpdateResult
 from telegram import Update
 from telegram.ext import ContextTypes
 
 from src.decorators.admin_only import admin_only
+from src.errors.error_codes import MISSING_TEXT_OR_MESSAGE
 from src.utils.other import get_environment_vars
 
 
@@ -29,7 +33,8 @@ def get_client():
         if client[mongo_dbname].command("ping"):
             return client
         else:
-            raise Exception("mongo did not PONG back :/")
+            msg = "mongo did not PONG back :/"
+            raise Exception(msg)
     except ConnectionFailure:
         raise ConnectionFailure
     except Exception as e:
@@ -40,7 +45,7 @@ def get_client():
 @admin_only
 async def check_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message is None or update.message.text is None:
-        raise ValueError("Missing message or text")
+        raise ValueError(MISSING_TEXT_OR_MESSAGE)
     try:
         tokens = update.message.text.split(" ")
         dbname = tokens[1]
@@ -59,18 +64,22 @@ async def check_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.chat.send_message(str(e))
         raise e
 
-
-def add_to_collection(context: ContextTypes.DEFAULT_TYPE, collection: str, obj: dict, upsert_key: str = ""):
-    db = context.application.bot_data["db"]
+def add_to_collection(
+        context: ContextTypes.DEFAULT_TYPE,
+        collection: str,
+        obj: dict,
+        upsert_key: str = ""
+) -> Union[UpdateResult, InsertOneResult]:
+    db: Database = context.application.bot_data["db"]
     try:
-        if upsert_key == "":
+        if not upsert_key:
             return db[collection].insert_one(obj)
         return db[collection].update_one({upsert_key: obj[upsert_key]}, {"$set": obj}, upsert=True)
     except Exception as e:
         raise e
 
 
-def load_collection(db, collection):
+def load_collection(db: Database, collection: str) -> list[dict]:
     try:
         result = db[collection].find()
         r = []
@@ -82,9 +91,9 @@ def load_collection(db, collection):
 
 
 @admin_only
-async def upsert_to_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def upsert_to_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is None or update.message.text is None:
-        raise ValueError("Missing message or text")
+        raise ValueError(MISSING_TEXT_OR_MESSAGE)
     try:
         tokens = update.message.text.split(" ")
         collection = tokens[1]
@@ -103,7 +112,7 @@ async def upsert_to_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def access_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # /mongo action collectionName json
     if update.message is None or update.message.text is None:
-        raise ValueError("Missing message or text")
+        raise ValueError(MISSING_TEXT_OR_MESSAGE)
     try:
         db: Database = context.application.bot_data["db"]
         message = update.message.text.replace("/accessMongo ", "")
@@ -114,7 +123,8 @@ async def access_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
         tokens = message.split(" ")
         if len(tokens) < 2:
-            raise Exception("Not enough arguments")
+            msg = "Not enough arguments"
+            raise Exception(msg)
         action = tokens[0]
         collection = tokens[1]
         if action == "insert":

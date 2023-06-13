@@ -1,5 +1,3 @@
-from typing import List
-
 from telegram import InlineKeyboardButton
 from telegram import InlineKeyboardMarkup
 
@@ -20,9 +18,11 @@ class Screen:
             for row in obj["rows"]:
                 for button in row:
                     if "text" not in button or "callbackData" not in button:
-                        raise Exception(f"Missing key: text or callback in {button}")
+                        msg = f"Missing key: text or callback in {button}"
+                        raise Exception(msg)
                     if "_" in button["callbackData"]:
-                        raise Exception(f'Button callback cannot contain "_", name: "{button}"')
+                        msg = f'Button callback cannot contain "_", name: "{button}"'
+                        raise Exception(msg)
         self.menuName = obj["menuName"]
         self.text = obj["text"]
         self.create_markup()
@@ -30,7 +30,7 @@ class Screen:
     def __str__(self) -> str:
         return f"Screen: {self.text}, callback: {self.name}, nRows: {len(self.rows)}"
 
-    def create_markup(self) -> List[List[InlineKeyboardButton]]:
+    def create_markup(self) -> list[list[InlineKeyboardButton]]:
         if "rows" in self.obj:
             for row in self.obj["rows"]:
                 t_row = []
@@ -45,5 +45,5 @@ class Screen:
                 self.rows.append(t_row)
         return self.rows
 
-    def build(self):
+    def build(self) -> None:
         self.markup = InlineKeyboardMarkup(self.rows)

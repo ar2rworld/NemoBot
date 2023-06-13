@@ -1,14 +1,15 @@
-from redis import Redis
 from telegram.ext import ContextTypes
 
+from src.my_redis.inmemoryRedis import InmemoryRedis
 
-def load_list(r: Redis, list_name: str) -> list[str]:
-    word_list: list[bytes] = r.lrange(list_name, 0, -1)
+
+def load_list(r, list_name) -> list[str]:
+    word_list = r.lrange(list_name, 0, -1)
     words = [w.decode("utf-8") for w in word_list]
     return words
 
 
-def push_word(r: Redis, context: ContextTypes.DEFAULT_TYPE, list_name: str, word: str) -> int:
+def push_word(r, context: ContextTypes.DEFAULT_TYPE, list_name, word: str) -> int:
     word_list = r.lrange(list_name, 0, -1)
     encoded_word = word.encode("utf-8")
     if encoded_word in word_list:
@@ -18,7 +19,7 @@ def push_word(r: Redis, context: ContextTypes.DEFAULT_TYPE, list_name: str, word
 
 
 def remove_from_list(
-    r: Redis, context: ContextTypes.DEFAULT_TYPE, list_name: str, key: str, n: int = 100
+    r: InmemoryRedis, context: ContextTypes.DEFAULT_TYPE, list_name: str, key: str, n: int = 100
 ) -> int:
     try:
         # if key is not in context skip else remove
@@ -26,6 +27,7 @@ def remove_from_list(
             n = r.lrem(list_name, n, key)
             context.application.bot_data[list_name].remove(key)
             return n
-        return 0
+        else:
+            return 0
     except KeyError:
         return 0

@@ -1,18 +1,20 @@
 import logging
 import os
 import time
-from typing import Tuple
 
+from requests import Session
 from requests_html import HTMLSession
 from telegram import Update
 from telegram.ext import ContextTypes
 
 from src.decorators.admin_only import admin_only
+from src.errors.error_codes import MISSING_TEXT_OR_MESSAGE
 from src.socials_interactions.linkedin2 import linkedin
 from src.socials_interactions.twitter2 import twitter_post
 
+error_logger = logging.getLogger("errorLogger")
 
-def dec(s):
+def dec(s: str) -> dict:
     d = {}
     for i in s.split("&"):
         t = i.split("=")
@@ -20,38 +22,38 @@ def dec(s):
     return d
 
 
-def get_div_attribute_value(line, str):
-    value_index = line.index(str)
-    value_start = line[line.index(str) :].index('"') + 1 + value_index
+def get_div_attribute_value(line: str, string:str) -> str:
+    value_index = line.index(string)
+    value_start = line[line.index(string) :].index('"') + 1 + value_index
     value_end = line[value_start:].index('"')
     value = line[value_start : value_start + value_end]
     return value
 
 
-def findTags(html, tag="", type=""):
+def find_tags(html: str, tag: str= "", tag_type:str = "") -> list[str]:
     tags = []
     for line in html.split("\n"):
-        if "<" + tag in line and type in line:
+        if "<" + tag in line and tag_type in line:
             try:
                 name = get_div_attribute_value(line, "name")
                 value = get_div_attribute_value(line, "value")
                 tags.append({"name": name, "value": value})
-            except Exception as e:
-                logging.getLogger("errorLogger").error(e)
+            except ValueError as v:
+                error_logger.error(v)
     return tags
 
 
-def findValue(s: str, key: str) -> str:
+def find_value(s: str, key: str) -> str:
     try:
         st = s.index(key) + len(key) + 2
         end = s[st:].index(",") - 1
         # print(s[st:st+end])
         return s[st : st + end].replace("'", "").replace("\\ ", "")[1:]
     except ValueError as v_e:
-        print(f"Substring not found, probably smt went wrong also in findValue():\n{v_e}")
+        error_logger(f"Substring not found, probably smt went wrong also in findValue():\n{v_e}")
         raise v_e
     except Exception as e:
-        print(f"Error occured in findValue():\n{e}")
+        error_logger(f"Error occured in findValue():\n{e}")
         raise e
 
 
@@ -66,7 +68,7 @@ def find_to_parameter(html: str) -> str:
     return ""
 
 
-def login_vk() -> Tuple[HTMLSession, str]:
+def login_vk() -> tuple[HTMLSession, str]:
     s3 = HTMLSession()
     i = 0
     to = ""
@@ -74,7 +76,7 @@ def login_vk() -> Tuple[HTMLSession, str]:
         time.sleep(i)
         r3 = s3.get("https://vk.com/")
         d = {}
-        for tag in findTags(r3.text, "input", "hidden"):
+        for tag in find_tags(r3.text, "input", "hidden"):
             d[tag["name"]] = tag["value"]
         # You email/phone and password
         d["email"] = os.getenv("VK_EMAIL")
@@ -88,7 +90,7 @@ def login_vk() -> Tuple[HTMLSession, str]:
         has_sid = "remixsid" in r3.headers["Set-Cookie"]
         # print('remixsid : ', has_sid)
         if has_sid:
-            uid = findValue(r3.text, "uid")
+            uid = find_value(r3.text, "uid")
             return s3, uid
         to = find_to_parameter(s3.get("https://vk.com/im").text.replace("\\", ""))
     return HTMLSession(), ""
@@ -97,12 +99,13 @@ def login_vk() -> Tuple[HTMLSession, str]:
 # loginVK()
 
 
-def make_post(session, uid, hash, message="testing"):
+def make_post(session: Session, uid: str, hash_string: str, message: str="testing") -> str:
     post = (
         "act=post&to_id="
-        + str(uid)
-        + "&type=all&friends_only=&best_friends_only=&close_comments=0&mute_notifications=0&mark_as_ads=0&official=&signed=&hash="
-        + hash
+        + uid
+        + "&type=all&friends_only=&best_friends_only=&close_comments=0"
+        + "&mute_notifications=0&mark_as_ads=0&official=&signed=&hash="
+        + hash_string
         + "&from=&fixed=461&update_admin_tips=0&al=1"
     )
     data_post = dec(post)
@@ -112,11 +115,11 @@ def make_post(session, uid, hash, message="testing"):
 
 
 @admin_only
-async def post(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def post(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is None or update.message.text is None:
-        raise ValueError("Missing message or text")
+        raise ValueError(MISSING_TEXT_OR_MESSAGE)
     if len(update.message.text.split(" ")) > 1:
-        errorLogger = context.application.bot_data["errorLogger"]
+        error_logger = context.application.bot_data["errorLogger"]
         message = update.message.text
         first_token = message.split(" ")[1]
         out = ""
@@ -128,14 +131,14 @@ async def post(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if "vk" in first_token:
                 s, uid = login_vk()
                 if not s or not uid:
-                    errorLogger.error("Did not get a vk session or uid")
+                    error_logger.error("Did not get a vk session or uid")
                 else:
                     s.get(
                         "https://oauth.vk.com/authorize?client_id=7888891&display=page&redirect_uri=https://vk.com/ar2r.life&scope=8192&response_type=token&v=5.131&state=123456"
                     )
-                    my_page_url = "https://vk.com/id" + str(uid)
+                    my_page_url = "https://vk.com/id" + uid
                     req_my_page = s.get(my_page_url)
-                    post_hash = findValue(req_my_page.text, "post_hash")
+                    post_hash = find_value(req_my_page.text, "post_hash")
                     await update.message.chat.send_message(f"logged in: {uid}")
                     if s is not None:
                         out += make_post(s, uid, post_hash, message) + "\n"

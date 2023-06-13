@@ -1,14 +1,11 @@
-from redis import Redis
-
-
-class InmemoryRedis(Redis):
-    def __init__(self, redis_host: str, redis_port: int) -> None:
+class InmemoryRedis:
+    def __init__(self, redis_host, redis_port) -> None:
         self.host: str = redis_host
         self.port: int = redis_port
         self.dict = {}
 
     def ping(self) -> bool:
-        return not self.host and not self.port
+        return self.host != "" and self.port != ""
 
     def lrange(self, list_name: str, begin: int, end: int) -> list[str]:
         if end == -1:
