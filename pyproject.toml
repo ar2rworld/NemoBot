@@ -7,7 +7,7 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "3.9.9"
+python = "3.11.4"
 redis = "4.5.5"
 requests-html = "0.10.0"
 pymongo = "4.3.3"
