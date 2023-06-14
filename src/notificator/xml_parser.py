@@ -23,4 +23,5 @@ def xml_parser(file: BinaryIO, content_length: int) -> list[str]:
             return [link, title, channel_id]
         return ["no <entry> element in DOM", "", ""]
     except ParseError as e:
-        return [f"Error occured while xml parsing:\n{e}", "", ""]
+        msg = f"Error occured while xml parsing:\n{e}"
+        return ParseError(msg)

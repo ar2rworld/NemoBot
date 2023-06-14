@@ -197,9 +197,9 @@ def main() -> None:
     if app.job_queue is None:
         msg = "Missing job_queue in application"
         raise ValueError(msg)
-    app.job_queue.run_daily(lambda x: subscribe(app), datetime.time(0, 0))
+    app.job_queue.run_daily(lambda: subscribe(app), datetime.time(0, 0))
 
-    async def send_alive_message(context: ContextTypes.DEFAULT_TYPE):
+    async def send_alive_message(context: ContextTypes.DEFAULT_TYPE) -> None:
         # send alive messages
         await app.bot.send_message(
             app.bot_data["tg_my_id"],

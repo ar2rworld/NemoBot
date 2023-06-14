@@ -6,7 +6,7 @@ from typing import Union
 import requests as req
 
 
-def linkedin(message=""):
+def linkedin(message: str="") -> str:
     url = "https://api.linkedin.com/v2/ugcPosts"
     linkedin_urn: Union[str, None] = os.getenv("LINKEDIN_URN")
     j = {
@@ -21,6 +21,6 @@ def linkedin(message=""):
     header_env: Union[str, None] = os.getenv("LINKEDIN_HEADERS")
     if header_env:
         headers = json.loads(header_env)
-    res = req.post(url, json=j, headers=headers)
+    res = req.post(url, json=j, headers=headers, timeout=5)
     out = "linkedin+" if "id" in json.loads(res.text) else "linkedin-\n" + res.text
     return out

@@ -1,19 +1,10 @@
 from os import getenv
-from typing import Tuple
 
 from pymongo.database import Database
 from telegram.ext import Application
 
 
-async def send_notifications(
-    video: Tuple[
-        str,
-        str,
-        str,
-    ],
-    application: Application,
-    db: Database,
-) -> None:
+async def send_notifications(video: list[str],application: Application, db: Database) -> None:  # noqa: PLR0912
     if len(video) == 3:
         try:
             link, title, channel_id = video
@@ -44,10 +35,11 @@ async def send_notifications(
                         )
                 else:
                     await application.bot.send_message(channel["chat_id"], text)
-        except Exception as e:
+        except KeyError as e:
             application.bot_data["errorLogger"].error(e)
             await application.bot.send_message(getenv("TG_MY_ID"), f"Error: {e}")
     else:
         # something went wrong, error message in (error, )
         error_message = f"Invalid tokens while sending notifications:{video}"
+        application.bot_data["errorLogger"].error(error_message)
         await application.bot.send_message(getenv("TG_MY_ID"), error_message)
