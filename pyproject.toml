@@ -49,6 +49,7 @@ ignore = [
   "UP006",  # Use `list` instead of `List` for type annotations
   "UP007",  # Use `X | Y` for type annotations
   "S101",  # assert usage
+  "S311",  # Standard pseudo-random generators
   "ARG001",  # Unused function argument
 ]
 line-length = 120
