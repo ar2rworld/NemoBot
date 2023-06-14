@@ -2,7 +2,10 @@ import logging
 from time import sleep
 
 import requests
+from pymongo.database import Database
+from pymongo.errors import ExecutionTimeout
 from telegram import Update
+from telegram.ext import Application
 from telegram.ext import ContextTypes
 
 from src.decorators.admin_only import admin_only
@@ -10,11 +13,12 @@ from src.decorators.admin_only import admin_only
 logging.basicConfig(filename="subscribe.log", filemode="w", level=logging.DEBUG)
 
 
-async def subscribe(app):
-    callbackUrl = app.bot_data["callbackUrl"]
-    hubUrl = app.bot_data["hubUrl"]
-    tg_my_id = app.bot_data["tg_my_id"]
-    db = app.bot_data["db"]
+async def subscribe(app: Application) -> None:
+    callback_url: str = app.bot_data["callbackUrl"]
+    hub_url: str= app.bot_data["hubUrl"]
+    tg_my_id: str = app.bot_data["tg_my_id"]
+    db: Database = app.bot_data["db"]
+
 
     with open("subscribe.log", mode="w") as f:
         f.write("___very_beginning___")
@@ -31,39 +35,48 @@ async def subscribe(app):
                 channel_id = channel["channelId"]
                 if channel_id:
                     params = (
-                        "/subscribe?hub.mode=subscribe"
-                        + f"&hub.callback={callbackUrl}"
+                        "/subscribe?hub.mode=subscribe" +
+                        + f"&hub.callback={callback_url}"
                         + "&hub.verify=async"
                         + f"&hub.topic=https://www.youtube.com/xml/feeds/videos.xml?channel_id={channel_id}"
                     )
                     if channel.get("verify_token"):
                         params += f"&hub.verify_token={channel.get('verify_token')}"
                     result = requests.post(
-                        url=hubUrl + params,
+                        url=hub_url + params,
                         headers={"Content-Type": "application/x-www-form-urlencoded"},
+                        timeout=1
                     )
                     if result.status_code != 202:
                         out.append((channel_id, result.status_code, result.text))
                 else:
                     out.append(("", "invalid channelId"))
-                    raise Exception("invalid channelId provided for subscribe")
-            if len(out) > 0:
-                logging.error(f"Number of invalid channels: {len(out)}")
-                errors = [f"{str(x)}\n" for x in out]
-                await app.bot.send_message(
-                    tg_my_id,
-                    f"I got some problems while subscribing for following channels:\n{errors}",
-                )
-            else:
-                logging.info(f"Finished subscribe, fetched : {count}")
-                await app.bot.send_message(tg_my_id, f"Finished subscribe, fetched : {count}")
-                break
-        except Exception as e:
+                    msg = "Missing channelId"
+                    raise Exception(msg)
+            await check_subscribe_errors(app, count, out, tg_my_id)
+        except ValueError as e:
+            logging.error(e)
+        except TypeError as e:
+            logging.error(e)
+        except ExecutionTimeout as e:
             logging.error(e)
         finally:
             sleep(5)
 
 
+async def check_subscribe_errors(app: Application, count: int, out: list[tuple[str]], tg_my_id: str) -> None:
+    if len(out) > 0:
+        logging.error(f"Number of invalid channels: {len(out)}")
+        errors = [f"{x!s}\n" for x in out]
+        await app.bot.send_message(
+            tg_my_id,
+            f"I got some problems while subscribing for following channels:\n{errors}",
+        )
+    else:
+        logging.info(f"Finished subscribe, fetched : {count}")
+        await app.bot.send_message(tg_my_id, f"Finished subscribe, fetched : {count}")
+
+
 @admin_only
-async def subscribe_to_channels(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def subscribe_to_channels(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await subscribe(context.application)
