@@ -22,6 +22,7 @@ async def send_notifications(
             for channel in channels:
                 last_video_link = channel.get("lastVideoLink")
                 if last_video_link == link:
+                    # Do not send notification if the same data were received
                     continue
                 channels_to_watch.update_one(channel, {"$set": {"lastVideoLink": link}})
 
