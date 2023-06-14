@@ -1,24 +1,26 @@
 import logging
-import xml.dom.minidom
+from typing import BinaryIO
+
+from defusedxml.ElementTree import ParseError
+from defusedxml.minidom import parseString
 
 logger = logging.getLogger("xmlParser")
 
 
-def xmlParser(file, content_length):
+def xml_parser(file: BinaryIO, content_length: int) -> list[str]:
     try:
         body = file.read(content_length)
         logger.info(body)
 
-        DOMTree = xml.dom.minidom.parseString(body)
-        videos = DOMTree.getElementsByTagName("entry")
+        dom_tree = parseString(body)
+        videos = dom_tree.getElementsByTagName("entry")
 
         if len(videos) == 1:
             title = videos[0].getElementsByTagName("title")[0].childNodes[0].data
             link = videos[0].getElementsByTagName("link")[0].getAttribute("href")
-            channelId = videos[0].getElementsByTagName("yt:channelId")[0].childNodes[0].data
-            logger.info("Finished parsing: " + title + " " + link + " " + channelId)
-            return (link, title, channelId)
-        else:
-            return ("no <entry> element in DOM", "", "")
-    except Exception as e:
-        return (f"Error occured while xml parsing:\n{e}", "", "")
+            channel_id = videos[0].getElementsByTagName("yt:channelId")[0].childNodes[0].data
+            logger.info("Finished parsing: " + title + " " + link + " " + channel_id)
+            return [link, title, channel_id]
+        return ["no <entry> element in DOM", "", ""]
+    except ParseError as e:
+        return [f"Error occured while xml parsing:\n{e}", "", ""]
