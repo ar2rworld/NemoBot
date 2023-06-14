@@ -97,12 +97,6 @@ async def tvoichlen(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.chat.send_message("Moi chlen!" if rnd() >= 0.5 else "Tvoi chlen!")
 
 
-async def test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if update.message is None or update.message.chat is None:
-        raise ValueError(MISSING_MESSAGE_OR_CHAT_OR_TEXT)
-    await update.message.chat.send_message("test command")
-
-
 async def add_calling_204_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is None or update.message.chat is None or update.message.text is None:
         raise ValueError(MISSING_MESSAGE_OR_CHAT_OR_TEXT)

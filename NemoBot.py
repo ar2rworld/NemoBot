@@ -4,15 +4,17 @@ import logging
 from logging import Logger
 from os import getenv
 
-from telegram import Update
 from telegram.ext import Application
 from telegram.ext import CallbackQueryHandler
 from telegram.ext import CommandHandler
-from telegram.ext import ContextTypes
 from telegram.ext import MessageHandler
 from telegram.ext import filters
 
 from src.handlers import callback_query_handler
+from src.handlers.basic import error
+from src.handlers.basic import help_command
+from src.handlers.basic import start_command
+from src.handlers.basic import test
 from src.handlers.context_executors import send_alive_message
 from src.handlers.echo_handler import echo_handler
 
@@ -40,54 +42,6 @@ from src.utils.echo import add_echo_phrase
 from src.utils.echo_commands import my_telegram_id
 from src.utils.list_caching import load_list
 from src.utils.other import get_environment_vars
-
-
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if update.message is None or update.message.chat is None:
-        msg = "Missing message or chat"
-        raise ValueError(msg)
-    await update.message.chat.send_message("start command")
-
-
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if update.message is None or update.message.chat is None:
-        msg = "Missing message or chat"
-        raise ValueError(msg)
-    await update.message.chat.send_message(
-        """
-/postaviat
-/tvoichlen
-/osuzhdat <bad word>
-/osuzhdat -p <bad phrase>
-/osuzhdat -a
-/neosuzhdat <bad word>
-/neosuzhdat -p <bad phrase>
-/my_telegram_id
-/addCalling204Help <helping phrase>
-add \"calling204\" when joking
-/addAlivePhrases <phrase> [|,|<phrase>|,|<phrase>...]
-Admin commands:
-    /checkMongo <dbName> <tableName>
-    /upsertToMongo <tableName> <json>
-    /post
-    /addEchoPhrase <phrase>|-|<answer>
-    /subscribeToChannels
-    /accessMongo [showTables] <insert|find|update|delete> <collectionName> [filter|<filter|-|json>]
-    """
-    )
-
-
-async def test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if update.message is None or update.message.chat is None:
-        msg = "Missing message or chat"
-        raise ValueError(msg)
-    await update.message.chat.send_message("yeah, this is a test command")
-
-
-async def error(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
-    error_logger = context.application.bot_data["errorLogger"]
-    error_logger.error(update)
-    await error_logger.error(context.error)
 
 
 def main() -> None:
