@@ -6,13 +6,13 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from src.decorators.admin_only import admin_only
-from src.errors.error_codes import MISSING_TEXT_OR_MESSAGE
+from src.errors.error_codes import MISSING_MESSAGE_OR_TEXT
 from src.mongo.mongo_connection import add_to_collection
 
 
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is None or update.message.text is None:
-        raise ValueError(MISSING_TEXT_OR_MESSAGE)
+        raise ValueError(MISSING_MESSAGE_OR_TEXT)
     echo_phrases = context.application.bot_data["echoPhrases"]
     for phrase in echo_phrases:
         try:
@@ -31,7 +31,7 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 @admin_only
 async def add_echo_phrase(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is None or update.message.text is None:
-        raise ValueError(MISSING_TEXT_OR_MESSAGE)
+        raise ValueError(MISSING_MESSAGE_OR_TEXT)
     message = update.message.text.replace("/addEchoPhrase ", "")
     if "|-|" in message:
         phrase, answer = message.split("|-|")

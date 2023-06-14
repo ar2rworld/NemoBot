@@ -11,7 +11,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from src.decorators.admin_only import admin_only
-from src.errors.error_codes import MISSING_TEXT_OR_MESSAGE
+from src.errors.error_codes import MISSING_MESSAGE_OR_TEXT
 from src.utils.other import get_environment_vars
 
 
@@ -45,7 +45,7 @@ def get_client():
 @admin_only
 async def check_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message is None or update.message.text is None:
-        raise ValueError(MISSING_TEXT_OR_MESSAGE)
+        raise ValueError(MISSING_MESSAGE_OR_TEXT)
     try:
         tokens = update.message.text.split(" ")
         dbname = tokens[1]
@@ -93,7 +93,7 @@ def load_collection(db: Database, collection: str) -> list[dict]:
 @admin_only
 async def upsert_to_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is None or update.message.text is None:
-        raise ValueError(MISSING_TEXT_OR_MESSAGE)
+        raise ValueError(MISSING_MESSAGE_OR_TEXT)
     try:
         tokens = update.message.text.split(" ")
         collection = tokens[1]
@@ -112,7 +112,7 @@ async def upsert_to_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 async def access_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # /mongo action collectionName json
     if update.message is None or update.message.text is None:
-        raise ValueError(MISSING_TEXT_OR_MESSAGE)
+        raise ValueError(MISSING_MESSAGE_OR_TEXT)
     try:
         db: Database = context.application.bot_data["db"]
         message = update.message.text.replace("/accessMongo ", "")

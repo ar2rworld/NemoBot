@@ -8,7 +8,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from src.decorators.admin_only import admin_only
-from src.errors.error_codes import MISSING_TEXT_OR_MESSAGE
+from src.errors.error_codes import MISSING_MESSAGE_OR_TEXT
 from src.socials_interactions.linkedin2 import linkedin
 from src.socials_interactions.twitter2 import twitter_post
 
@@ -30,7 +30,7 @@ def get_div_attribute_value(line: str, string:str) -> str:
     return value
 
 
-def find_tags(html: str, tag: str= "", tag_type:str = "") -> list[str]:
+def find_tags(html: str, tag: str= "", tag_type:str = "") -> list[dict]:
     tags = []
     for line in html.split("\n"):
         if "<" + tag in line and tag_type in line:
@@ -50,10 +50,10 @@ def find_value(s: str, key: str) -> str:
         # print(s[st:st+end])
         return s[st : st + end].replace("'", "").replace("\\ ", "")[1:]
     except ValueError as v_e:
-        error_logger(f"Substring not found, probably smt went wrong also in findValue():\n{v_e}")
+        error_logger.error(f"Substring not found, probably smt went wrong also in findValue():\n{v_e}")
         raise v_e
     except Exception as e:
-        error_logger(f"Error occured in findValue():\n{e}")
+        error_logger.error(f"Error occured in findValue():\n{e}")
         raise e
 
 
@@ -117,7 +117,7 @@ def make_post(session: Session, uid: str, hash_string: str, message: str="testin
 @admin_only
 async def post(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is None or update.message.text is None:
-        raise ValueError(MISSING_TEXT_OR_MESSAGE)
+        raise ValueError(MISSING_MESSAGE_OR_TEXT)
     if len(update.message.text.split(" ")) > 1:
         error_logger = context.application.bot_data["errorLogger"]
         message = update.message.text
