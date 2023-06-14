@@ -1,5 +1,7 @@
 import logging
+from collections.abc import Coroutine
 from time import sleep
+from typing import Any
 
 import requests
 from pymongo.database import Database
@@ -13,7 +15,7 @@ from src.decorators.admin_only import admin_only
 logging.basicConfig(filename="subscribe.log", filemode="w", level=logging.DEBUG)
 
 
-async def subscribe(app: Application) -> None:
+async def subscribe(app: Application) -> Coroutine[Any, Any, Any]:
     callback_url: str = app.bot_data["callbackUrl"]
     hub_url: str= app.bot_data["hubUrl"]
     tg_my_id: str = app.bot_data["tg_my_id"]
@@ -36,7 +38,7 @@ async def subscribe(app: Application) -> None:
                 if channel_id:
                     params = (
                         "/subscribe?hub.mode=subscribe" +
-                        + f"&hub.callback={callback_url}"
+                        + f"&hub.callback={callback_url}"  # type: ignore[reportGeneralTypeIssues]
                         + "&hub.verify=async"
                         + f"&hub.topic=https://www.youtube.com/xml/feeds/videos.xml?channel_id={channel_id}"
                     )

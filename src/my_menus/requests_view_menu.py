@@ -5,9 +5,9 @@ from src.menus.menu import Menu
 
 
 # menu to view requests and approve/deny them, check TODO
-def setup_requests_view_menu(app: Application, db: Database):
+def setup_requests_view_menu(app: Application, db: Database) -> None:
     menu = Menu("requestsView", command="requestsView", application=app, db=db)
-    requestCommands = db.requestedCommands.find({"status": 1})
+    request_commands = db.requestedCommands.find({"status": 1})
     menu.add_screen_obj(
         {
             "text": "List of requests:",
@@ -19,7 +19,7 @@ def setup_requests_view_menu(app: Application, db: Database):
                         "callbackData": "",
                         "callbackFunction": lambda: None,
                     }
-                    for r in requestCommands
+                    for r in request_commands
                 ]
             ],
         }

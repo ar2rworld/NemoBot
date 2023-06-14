@@ -6,5 +6,5 @@ from telegram.ext import ContextTypes
 
 def print_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     main_logger: Logger = context.bot_data["mainLogger"]
-    main_logger.log(msg=update)  # type: ignore [reportGeneralTypeIssues]
+    main_logger.log(msg=update)  # type: ignore[reportGeneralTypeIssues]
     main_logger.log(msg=context)

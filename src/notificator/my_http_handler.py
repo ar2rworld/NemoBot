@@ -17,7 +17,7 @@ server_logger = logging.getLogger("server_logger")
 class Handler(BaseHTTPRequestHandler):
     def __init__(
         self,
-        request: Any,
+        request: Any,  # noqa: ANN401
         client_address: tuple[str, int],
         server: MyHttpServer,
     ) -> None:

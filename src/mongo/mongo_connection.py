@@ -1,5 +1,6 @@
 import json
 import logging
+import sys
 from typing import Union
 
 from pymongo import MongoClient
@@ -7,15 +8,17 @@ from pymongo.database import Database
 from pymongo.errors import ConnectionFailure
 from pymongo.results import InsertOneResult
 from pymongo.results import UpdateResult
+from telegram import Chat
 from telegram import Update
 from telegram.ext import ContextTypes
 
 from src.decorators.admin_only import admin_only
 from src.errors.error_codes import MISSING_MESSAGE_OR_TEXT
+from src.errors.error_codes import MONGO_CONNECTION_FAILURE
 from src.utils.other import get_environment_vars
 
 
-def get_client():
+def get_client() -> MongoClient:
     error_logger = logging.getLogger("errorLogger")
 
     mongo_host, mongo_port, mongo_dbname = get_environment_vars("MONGO_HOST", "MONGO_PORT", "MONGO_DBNAME")
@@ -32,18 +35,15 @@ def get_client():
 
         if client[mongo_dbname].command("ping"):
             return client
-        else:
-            msg = "mongo did not PONG back :/"
-            raise Exception(msg)
-    except ConnectionFailure:
-        raise ConnectionFailure
-    except Exception as e:
-        error_logger.error(e)
-        raise e
+        msg = "mongo did not PONG back :/"
+        raise Exception(msg)
+    except ConnectionFailure as connection_failure:
+        error_logger.error(MONGO_CONNECTION_FAILURE + str(connection_failure))
+        sys.exit(MONGO_CONNECTION_FAILURE + str(connection_failure))
 
 
 @admin_only
-async def check_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def check_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is None or update.message.text is None:
         raise ValueError(MISSING_MESSAGE_OR_TEXT)
     try:
@@ -104,12 +104,12 @@ async def upsert_to_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         db = context.application.bot_data["db"]
         result = db[collection].update_one(filter_parameter, obj, upsert=True)
         await update.message.chat.send_message(f"{result.acknowledged}")
-    except Exception as e:
+    except TypeError as e:
         await update.message.chat.send_message(str(e))
 
 
 @admin_only
-async def access_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def access_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # /mongo action collectionName json
     if update.message is None or update.message.text is None:
         raise ValueError(MISSING_MESSAGE_OR_TEXT)
@@ -127,33 +127,36 @@ async def access_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             raise Exception(msg)
         action = tokens[0]
         collection = tokens[1]
-        if action == "insert":
-            obj = json.loads(" ".join(tokens[2:]))
-            result = db[collection].insert_one(obj)
-            await chat.send_message(f"{result.acknowledged}")
-        elif action == "find":
-            result = None
-            if len(tokens) > 2:
-                filter_separator = json.loads(" ".join(tokens[2:]))
-                result = db[collection].find(filter_separator)
-            else:
-                result = db[collection].find()
-            c = 0
-            output = ""
-            for row in result:
-                output += str(row) + "\n"
-                c += 1
-            await chat.send_message(f"{output}{c} rows found")
-        elif action == "update":
-            objects = " ".join(tokens[2:]).split("|-|")
-            filter_separator = json.loads(objects[0])
-            obj = json.loads(objects[1])
-            result = db[collection].update_one(filter_separator, obj)
-            await chat.send_message(f"{result.acknowledged}")
-        elif action == "delete":
-            filter_separator = json.loads(" ".join(tokens[2:]))
-            result = db[collection].delete_one(filter_separator)
-            await chat.send_message(f"{result.acknowledged}")
-    except Exception as e:
+        # Execute mongo_actions
+        await mongo_actions(db, chat, tokens, action, collection)
+    except TypeError as e:
         await update.message.chat.send_message(str(e))
-        raise e
+
+async def mongo_actions(db: Database, chat: Chat, tokens: list[str], action: str, collection: str) -> None:
+    if action == "insert":
+        obj = json.loads(" ".join(tokens[2:]))
+        result = db[collection].insert_one(obj)
+        await chat.send_message(f"{result.acknowledged}")
+    elif action == "find":
+        result = None
+        if len(tokens) > 2:
+            filter_separator = json.loads(" ".join(tokens[2:]))
+            result = db[collection].find(filter_separator)
+        else:
+            result = db[collection].find()
+        c = 0
+        output = ""
+        for row in result:
+            output += str(row) + "\n"
+            c += 1
+        await chat.send_message(f"{output}{c} rows found")
+    elif action == "update":
+        objects = " ".join(tokens[2:]).split("|-|")
+        filter_separator = json.loads(objects[0])
+        obj = json.loads(objects[1])
+        result = db[collection].update_one(filter_separator, obj)
+        await chat.send_message(f"{result.acknowledged}")
+    elif action == "delete":
+        filter_separator = json.loads(" ".join(tokens[2:]))
+        result = db[collection].delete_one(filter_separator)
+        await chat.send_message(f"{result.acknowledged}")

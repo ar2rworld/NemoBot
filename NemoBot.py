@@ -1,12 +1,9 @@
 import _thread
 import datetime
 import logging
-import subprocess
+from logging import Logger
 from os import getenv
 
-import redis
-from telegram import KeyboardButton
-from telegram import ReplyKeyboardMarkup
 from telegram import Update
 from telegram.ext import Application
 from telegram.ext import CallbackQueryHandler
@@ -15,6 +12,8 @@ from telegram.ext import ContextTypes
 from telegram.ext import MessageHandler
 from telegram.ext import filters
 
+from src.handlers import callback_query_handler
+from src.handlers.context_executors import send_alive_message
 from src.handlers.echo_handler import echo_handler
 
 # local functions
@@ -30,8 +29,8 @@ from src.mongo.mongo_connection import check_mongo
 from src.mongo.mongo_connection import get_client
 from src.mongo.mongo_connection import load_collection
 from src.mongo.mongo_connection import upsert_to_mongo
-from src.my_menus.request_access_menu import setupRequestAccessMenu
-from src.my_redis.inmemory_redis import InmemoryRedis
+from src.my_menus.request_access_menu import setup_request_access_menu
+from src.my_redis.setup_redis import setup_redis
 from src.notificator.run_server import run_server
 from src.notificator.subscribe import subscribe
 from src.notificator.subscribe import subscribe_to_channels
@@ -41,7 +40,6 @@ from src.utils.echo import add_echo_phrase
 from src.utils.echo_commands import my_telegram_id
 from src.utils.list_caching import load_list
 from src.utils.other import get_environment_vars
-from src.utils.other import pick_random_from_list
 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -93,30 +91,9 @@ async def error(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 def main() -> None:
-    xml_parser_logger = logging.getLogger("xmlParser")
-    xml_parser_logger.setLevel(logging.INFO)
-    xml_parser_handler = logging.FileHandler("xmlBodyLocal.log", "a", "utf-8")
-    xml_parser_handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
-    xml_parser_logger.addHandler(xml_parser_handler)
-
-    error_logger = logging.getLogger("errorLogger")
-    error_logger.setLevel(logging.ERROR)
-    error_logger_handler = logging.FileHandler("error.log", "a", "utf-8")
-    error_logger_handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
-    error_logger.addHandler(error_logger_handler)
-
-    main_logger = logging.getLogger("mainLogger")
-    main_logger.setLevel(logging.INFO)
-    main_logger_handler = logging.FileHandler("main.log", "a", "utf-8")
-    main_logger_handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
-    main_logger.addHandler(main_logger_handler)
+    xml_parser_logger, error_logger, main_logger, server_logger = setup_loggers()
 
     main_logger.info("Starting...")
-
-    server_logger = logging.getLogger("serverLogger")
-    server_logger_handler = logging.FileHandler("server.log", "a", "utf-8")
-    server_logger_handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
-    server_logger.addHandler(server_logger_handler)
 
     nemobottoken = get_environment_vars("NEMOBOTTOKEN")[0]
     app = Application.builder().token(nemobottoken).build()
@@ -124,38 +101,25 @@ def main() -> None:
     db = get_client()[get_environment_vars("MONGO_DBNAME")[0]]
 
     redis_host, redis_port = get_environment_vars("REDIS_HOST", "REDIS_PORT")
-    r = None
-    if getenv("DEBUG"):
-        r = InmemoryRedis(redis_host, int(redis_port))
-    else:
-        r = redis.Redis(redis_host, int(redis_port))
-        try:
-            if r.ping():
-                main_logger.info("Redis is ready")
-        except Exception as e:
-            error_logger.error(e)
-            main_logger.error("Redis is not ready")
-            raise e
+
+    r = setup_redis(getenv("DEBUG"), error_logger, main_logger, redis_host, redis_port)
 
     app.bot_data["r"] = r
     app.bot_data["db"] = db
     app.bot_data["mainLogger"] = main_logger
     app.bot_data["errorLogger"] = error_logger
     app.bot_data["findMenuInContext"] = find_menu_in_context
-    app.bot_data["callbackUrl"] = getenv("CALLBACKURL")
-    app.bot_data["hubUrl"] = getenv("HUBURL")
-    app.bot_data["tg_my_id"] = getenv("TG_MY_ID")
-    app.bot_data["adminId"] = getenv("TG_MY_ID")
+    app.bot_data["callbackUrl"], app.bot_data["hubUrl"] = get_environment_vars("CALLBACKURL", "HUBURL")
+    app.bot_data["tg_my_id"], app.bot_data["adminId"] = get_environment_vars("TG_MY_ID", "TG_MY_ID")
     app.bot_data["calling204Phrases"] = set(load_list(r, "calling204Phrases"))
     app.bot_data["echoPhrases"] = load_collection(db, "echoPhrases")
     app.bot_data["alivePhrases"] = load_collection(db, "alivePhrases") or [{"phrase": "I am alive"}]
     app.bot_data["mat"] = set(load_list(r, "mat"))
-    app.bot_data["botChannel"] = getenv("BOTCHANNEL")
-    app.bot_data["botGroup"] = getenv("BOTGROUP")
+    app.bot_data["botChannel"], app.bot_data["botGroup"] = get_environment_vars("BOTCHANNEL", "BOTGROUP")
     app.bot_data["callbackQueryHandlers"] = {}
     app.bot_data["echoHandlers"] = {}
 
-    setupRequestAccessMenu(app, db)
+    setup_request_access_menu(app, db)
 
     app.bot_data["findMenuInContext"] = find_menu_in_context
 
@@ -178,46 +142,49 @@ def main() -> None:
     app.add_handler(CommandHandler("addAlivePhrases", add_alive_phrases))
     app.add_handler(MessageHandler(filters.TEXT, echo_handler))
 
-    async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        if update.callback_query is None or update.callback_query.data is None:
-            msg = "Missing callback_query or data"
-            raise ValueError(msg)
-        func = context.application.bot_data["callbackQueryHandlers"][update.callback_query.data]
-        if not func:
-            msg = f'Callback query handler: "{update.callback_query.data}" not found'
-            raise Exception(msg)
-        await func(update, context)
-
     app.add_handler(CallbackQueryHandler(callback_query_handler))
     app.add_error_handler(error)
 
     notificator_host, notificator_port = get_environment_vars("NOTIFICATOR_HOST", "NOTIFICATOR_PORT")
     _thread.start_new_thread(run_server, (app, db, notificator_host, notificator_port))
 
-    if app.job_queue is None:
-        msg = "Missing job_queue in application"
-        raise ValueError(msg)
-    app.job_queue.run_daily(lambda: subscribe(app), datetime.time(0, 0))
-
-    async def send_alive_message(context: ContextTypes.DEFAULT_TYPE) -> None:
-        # send alive messages
-        await app.bot.send_message(
-            app.bot_data["tg_my_id"],
-            "hello comrade!",
-            reply_markup=ReplyKeyboardMarkup([[KeyboardButton("/help")], [KeyboardButton("/requestAccess")]]),
-        )
-        if not getenv("DEBUG"):
-            commits = subprocess.check_output(["git", "log"]).decode("utf-8")
-            last_commit = commits[commits.find("Author", 1) : commits.find("commit", 1)].replace("\n", "")
-            phrase = pick_random_from_list(app.bot_data["alivePhrases"])["phrase"]
-            channel_post = f"{last_commit}\n{phrase}"
-            await app.bot.send_message(app.bot_data["botChannel"], channel_post)
-            await app.bot.send_message(app.bot_data["botGroup"], phrase)
-
-    app.job_queue.run_once(send_alive_message, 0)
+    setup_app_job_queue(app)
 
     main_logger.info("Started")
     app.run_polling()
+
+def setup_app_job_queue(app: Application) -> None:
+    if app.job_queue is None:
+        msg = "Missing job_queue in application"
+        raise ValueError(msg)
+    app.job_queue.run_daily(subscribe, datetime.time(0, 0), job_kwargs={"app": app})
+
+    app.job_queue.run_once(send_alive_message, 0)
+
+def setup_loggers() -> tuple[Logger, Logger, Logger, Logger]:
+    xml_parser_logger = logging.getLogger("xmlParser")
+    xml_parser_logger.setLevel(logging.INFO)
+    xml_parser_handler = logging.FileHandler("xmlBodyLocal.log", "a", "utf-8")
+    xml_parser_handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
+    xml_parser_logger.addHandler(xml_parser_handler)
+
+    error_logger = logging.getLogger("errorLogger")
+    error_logger.setLevel(logging.ERROR)
+    error_logger_handler = logging.FileHandler("error.log", "a", "utf-8")
+    error_logger_handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
+    error_logger.addHandler(error_logger_handler)
+
+    main_logger = logging.getLogger("mainLogger")
+    main_logger.setLevel(logging.INFO)
+    main_logger_handler = logging.FileHandler("main.log", "a", "utf-8")
+    main_logger_handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
+    main_logger.addHandler(main_logger_handler)
+
+    server_logger = logging.getLogger("serverLogger")
+    server_logger_handler = logging.FileHandler("server.log", "a", "utf-8")
+    server_logger_handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
+    server_logger.addHandler(server_logger_handler)
+    return xml_parser_logger, error_logger, main_logger, server_logger
 
 
 if __name__ == "__main__":

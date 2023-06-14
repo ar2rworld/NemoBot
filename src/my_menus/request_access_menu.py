@@ -3,12 +3,14 @@ from telegram import Update
 from telegram.ext import Application
 from telegram.ext import ContextTypes
 
+from src.errors.error_codes import MISSING_CALLBACK_QUERY
 from src.menus.menu import Menu
 
 
-async def user_input_echo_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def user_input_echo_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is None or update.message.from_user is None:
-        raise ValueError("Missing message or from_user")
+        msg = "Missing message or from_user"
+        raise ValueError(msg)
     bot_data = context.application.bot_data
     user_input = update.message.text
     user_id = update.message.from_user.id
@@ -47,9 +49,9 @@ async def user_input_echo_handler(update: Update, context: ContextTypes.DEFAULT_
     menu.render_screen(user_id, "thankYouScreen")
 
 
-def authorize_add_echo_phrase(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def authorize_add_echo_phrase(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.callback_query is None:
-        raise ValueError("Missing callback_query")
+        raise ValueError(MISSING_CALLBACK_QUERY)
     bot_data = context.application.bot_data
     user_id = update.callback_query.from_user.id
     menu = bot_data["findMenuInContext"](update, context)
@@ -69,9 +71,9 @@ def authorize_add_echo_phrase(update: Update, context: ContextTypes.DEFAULT_TYPE
     )
 
 
-def upsert_to_mongo_callback_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def upsert_to_mongo_callback_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.callback_query is None:
-        raise ValueError("Missing callback_query")
+        raise ValueError(MISSING_CALLBACK_QUERY)
     bot_data = context.application.bot_data
     user_id = update.callback_query.from_user.id
     menu = bot_data["findMenuInContext"](update, context)
@@ -91,9 +93,9 @@ def upsert_to_mongo_callback_query(update: Update, context: ContextTypes.DEFAULT
     )
 
 
-def checkMongoCallbackQuery(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def check_mongo_callback_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.callback_query is None:
-        raise ValueError("Missing callback_query")
+        raise ValueError(MISSING_CALLBACK_QUERY)
     bot_data = context.application.bot_data
     user_id = update.callback_query.from_user.id
     menu = bot_data["findMenuInContext"](update, context)
@@ -107,7 +109,7 @@ def checkMongoCallbackQuery(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-def setupRequestAccessMenu(app: Application, db: Database):
+def setup_request_access_menu(app: Application, db: Database) -> Menu:
     menu = Menu("requestAccess", command="requestAccess", application=app, db=db)
     menu.add_screen_obj(
         {
@@ -123,7 +125,7 @@ def setupRequestAccessMenu(app: Application, db: Database):
                     {
                         "text": "checkMongo",
                         "callbackData": "checkMongoCallbackQuery",
-                        "callbackFunction": checkMongoCallbackQuery,
+                        "callbackFunction": check_mongo_callback_query,
                     },
                 ],
                 [
