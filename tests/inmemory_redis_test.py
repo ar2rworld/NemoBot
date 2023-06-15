@@ -1,12 +1,11 @@
 import unittest
 
 from src.my_redis.inmemory_redis import InmemoryRedis
-from src.utils.other import get_environment_vars
 
 
 class TestInmemoryRedis(unittest.TestCase):
     def test_basics(self) -> None:
-        redis_host, redis_port = get_environment_vars("REDIS_HOST", "REDIS_PORT")
+        redis_host, redis_port = "redis_host", "1000"
         inr = InmemoryRedis(redis_host, int(redis_port))
         pong = inr.ping()
         assert pong is True
