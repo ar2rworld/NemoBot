@@ -7,14 +7,14 @@ class MissingMenuError(Exception):
         return super().__str__() + f"Missing menu: {self.menu_name} in the `bot_data` context"
 
 class NoScreensMenuError(Exception):
-    def __init__(self, menu: any, *args: object) -> None:
+    def __init__(self, menu: object, *args: object) -> None:
         super().__init__(*args)
         self.menu = menu
     def __str__(self) -> str:
-        return super().__str__() + f"No screens in menu: {self.menu.name}\n{self.menu}"
+        return super().__str__() + f"No screens in menu:\n{self.menu}"
 
 class ScreenMenuError(Exception):
-    def __init__(self, message: str, menu: any, *args: object) -> None:
+    def __init__(self, message: str, menu: object, *args: object) -> None:
         super().__init__(*args)
         self.message: str = message
         self.menu = menu
@@ -22,7 +22,7 @@ class ScreenMenuError(Exception):
         return super().__str__() + f"{self.message}\n{self.menu}"
 
 class MenuError(Exception):
-    def __init__(self, message: str, menu: any, *args: object) -> None:
+    def __init__(self, message: str, menu: object, *args: object) -> None:
         super().__init__(*args)
         self.message: str = message
         self.menu = menu

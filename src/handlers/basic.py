@@ -44,7 +44,7 @@ async def test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.chat.send_message("yeah, this is a test command")
 
 
-async def error(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def error(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     error_logger = context.application.bot_data["errorLogger"]
     error_logger.error(update)
-    await error_logger.error(context.error)
+    return await error_logger.error(context.error)

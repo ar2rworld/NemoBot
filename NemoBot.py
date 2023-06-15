@@ -10,11 +10,11 @@ from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler
 from telegram.ext import filters
 
-from src.handlers import callback_query_handler
 from src.handlers.basic import error
 from src.handlers.basic import help_command
 from src.handlers.basic import start_command
 from src.handlers.basic import test
+from src.handlers.callback_query_handler import callback_query_handler
 from src.handlers.context_executors import send_alive_message
 from src.handlers.echo_handler import echo_handler
 
