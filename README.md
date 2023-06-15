@@ -66,10 +66,10 @@ HUBURL=https://pubsubhubbub.appspot.com
 MONGOVOLUMEPATH=mongo_volume_path
 MONGOINITDBPATH=mongo_initdb_path
 REDISVOLUMEPATH=redis_volume_path
-linkedin_headers=someJsonHeadersStructure
-linkedin_urn=someLinkedinUrn
-vk_email=vkEmailOrPhone
-vk_pass=vkPassword
+LINKEDIN_HEADERS=someJsonHeadersStructure
+LINKEDIN_URN=someLinkedinUrn
+VK_EMAIL=vkEmailOrPhone
+VK_PASS=vkPassword
 ```
 
 ### Command
