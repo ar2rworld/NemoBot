@@ -14,6 +14,7 @@ from src.socials_interactions.twitter2 import twitter_post
 
 error_logger = logging.getLogger("errorLogger")
 
+
 def dec(s: str) -> dict:
     d = {}
     for i in s.split("&"):
@@ -22,7 +23,7 @@ def dec(s: str) -> dict:
     return d
 
 
-def get_div_attribute_value(line: str, string:str) -> str:
+def get_div_attribute_value(line: str, string: str) -> str:
     value_index = line.index(string)
     value_start = line[line.index(string) :].index('"') + 1 + value_index
     value_end = line[value_start:].index('"')
@@ -30,7 +31,7 @@ def get_div_attribute_value(line: str, string:str) -> str:
     return value
 
 
-def find_tags(html: str, tag: str= "", tag_type:str = "") -> list[dict]:
+def find_tags(html: str, tag: str = "", tag_type: str = "") -> list[dict]:
     tags = []
     for line in html.split("\n"):
         if "<" + tag in line and tag_type in line:
@@ -99,7 +100,7 @@ def login_vk() -> tuple[HTMLSession, str]:
 # loginVK()
 
 
-def make_post(session: Session, uid: str, hash_string: str, message: str="testing") -> str:
+def make_post(session: Session, uid: str, hash_string: str, message: str = "testing") -> str:
     post = (
         "act=post&to_id="
         + uid

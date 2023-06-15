@@ -17,9 +17,7 @@ def push_word(r: Redis, context: ContextTypes.DEFAULT_TYPE, list_name: str, word
     return r.lpush(list_name, encoded_word)
 
 
-def remove_from_list(
-    r: Redis, context: ContextTypes.DEFAULT_TYPE, list_name: str, key: str, n: int = 100
-) -> int:
+def remove_from_list(r: Redis, context: ContextTypes.DEFAULT_TYPE, list_name: str, key: str, n: int = 100) -> int:
     try:
         # if key is not in context skip else remove
         if key in context.application.bot_data[list_name]:

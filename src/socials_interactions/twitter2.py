@@ -13,7 +13,7 @@ def get_twitter_api() -> twitter.Api:
     return api
 
 
-def twitter_post(message: str="Hello World from python-twitter!", media: str="") -> None:
+def twitter_post(message: str = "Hello World from python-twitter!", media: str = "") -> None:
     api = get_twitter_api()
     if api.VerifyCredentials():
         api.PostUpdate(message, media=media)

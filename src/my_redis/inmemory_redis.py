@@ -8,7 +8,7 @@ class InmemoryRedis(Redis):
         self.dict = {}
 
     def ping(self) -> bool:
-        return self.host and self.port != 0
+        return bool(self.host and self.port != 0)
 
     def lrange(self, list_name: str, begin: int, end: int) -> list[str]:
         if end == -1:

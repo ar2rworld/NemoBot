@@ -4,7 +4,7 @@ from pymongo.database import Database
 from telegram.ext import Application
 
 
-async def send_notifications(video: list[str],application: Application, db: Database) -> None:  # noqa: PLR0912
+async def send_notifications(video: list[str], application: Application, db: Database) -> None:  # noqa: PLR0912
     if len(video) == 3:
         try:
             link, title, channel_id = video

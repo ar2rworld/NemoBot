@@ -17,10 +17,9 @@ logging.basicConfig(filename="subscribe.log", filemode="w", level=logging.DEBUG)
 
 async def subscribe(app: Application) -> Coroutine[Any, Any, Any]:
     callback_url: str = app.bot_data["callbackUrl"]
-    hub_url: str= app.bot_data["hubUrl"]
+    hub_url: str = app.bot_data["hubUrl"]
     tg_my_id: str = app.bot_data["tg_my_id"]
     db: Database = app.bot_data["db"]
-
 
     with open("subscribe.log", mode="w") as f:
         f.write("___very_beginning___")
@@ -37,17 +36,15 @@ async def subscribe(app: Application) -> Coroutine[Any, Any, Any]:
                 channel_id = channel["channelId"]
                 if channel_id:
                     params = (
-                        "/subscribe?hub.mode=subscribe" +
-                        + f"&hub.callback={callback_url}"  # type: ignore[reportGeneralTypeIssues]
+                        "/subscribe?hub.mode=subscribe"
+                        + +f"&hub.callback={callback_url}"  # type: ignore[reportGeneralTypeIssues]
                         + "&hub.verify=async"
                         + f"&hub.topic=https://www.youtube.com/xml/feeds/videos.xml?channel_id={channel_id}"
                     )
                     if channel.get("verify_token"):
                         params += f"&hub.verify_token={channel.get('verify_token')}"
                     result = requests.post(
-                        url=hub_url + params,
-                        headers={"Content-Type": "application/x-www-form-urlencoded"},
-                        timeout=1
+                        url=hub_url + params, headers={"Content-Type": "application/x-www-form-urlencoded"}, timeout=1
                     )
                     if result.status_code != 202:
                         out.append((channel_id, result.status_code, result.text))

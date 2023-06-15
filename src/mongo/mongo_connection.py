@@ -64,11 +64,9 @@ async def check_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         await update.message.chat.send_message(str(e))
         raise e
 
+
 def add_to_collection(
-        context: ContextTypes.DEFAULT_TYPE,
-        collection: str,
-        obj: dict,
-        upsert_key: str = ""
+    context: ContextTypes.DEFAULT_TYPE, collection: str, obj: dict, upsert_key: str = ""
 ) -> Union[UpdateResult, InsertOneResult]:
     db: Database = context.application.bot_data["db"]
     try:
@@ -131,6 +129,7 @@ async def access_mongo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         await mongo_actions(db, chat, tokens, action, collection)
     except TypeError as e:
         await update.message.chat.send_message(str(e))
+
 
 async def mongo_actions(db: Database, chat: Chat, tokens: list[str], action: str, collection: str) -> None:
     if action == "insert":

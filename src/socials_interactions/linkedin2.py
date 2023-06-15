@@ -6,7 +6,7 @@ from typing import Union
 import requests as req
 
 
-def linkedin(message: str="") -> str:
+def linkedin(message: str = "") -> str:
     url = "https://api.linkedin.com/v2/ugcPosts"
     linkedin_urn: Union[str, None] = os.getenv("LINKEDIN_URN")
     j = {

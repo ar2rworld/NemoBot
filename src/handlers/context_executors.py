@@ -1,4 +1,3 @@
-
 import subprocess
 from os import getenv
 
@@ -28,6 +27,7 @@ async def send_alive_message(context: ContextTypes.DEFAULT_TYPE) -> None:
         channel_post = f"{last_commit}\n{phrase}"
         await app.bot.send_message(app.bot_data["botChannel"], channel_post)
         await app.bot.send_message(app.bot_data["botGroup"], phrase)
+
 
 def save_conversation(context: ContextTypes.DEFAULT_TYPE, message: Message) -> None:
     r: Redis = context.application.bot_data["r"]
