@@ -7,7 +7,7 @@
 ## Technologies:
 
 <ul>
-<li>Python 3.7</li>
+<li>Python 3.11</li>
   <ul>
     <li>redis</li>
     <li>requests_html</li>
@@ -91,6 +91,11 @@ docker-compose --env-file .env up --remove-orphans -d
 ```bash
     pre-commit run -a
     pre-commit run   [hook]
+```
+
+### Run with poetry:
+```bash
+    poetry run python NemoBot.py
 ```
 
 ### For other commands:
