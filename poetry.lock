@@ -12,7 +12,7 @@ files = [
 ]
 
 [package.dependencies]
-exceptiongroup = {version = "*", markers = "python_version < \"3.11\""}
+exceptiongroup = {version = "*", markers = 'python_version < "3.11"'}
 idna = ">=2.8"
 sniffio = ">=1.1"
 
@@ -24,7 +24,7 @@ trio = ["trio (<0.22)"]
 [[package]]
 name = "appdirs"
 version = "1.4.4"
-description = "A small Python module for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
+description = 'A small Python module for determining appropriate platform-specific dirs, e.g. a "user data dir".'
 optional = false
 python-versions = "*"
 files = [
@@ -192,7 +192,7 @@ files = [
 ]
 
 [package.dependencies]
-colorama = {version = "*", markers = "platform_system == \"Windows\""}
+colorama = {version = "*", markers = 'platform_system == "Windows"'}
 
 [[package]]
 name = "colorama"
@@ -241,9 +241,9 @@ files = [
 [package.dependencies]
 chardet = ">=4.0.0"
 click = ">=8.0.0,<9.0.0"
-colorama = {version = ">=0.4.6", markers = "sys_platform == \"win32\""}
+colorama = {version = ">=0.4.6", markers = 'sys_platform == "win32"'}
 pathspec = ">=0.9.0"
-tomli = {version = ">=2.0.1,<3.0.0", markers = "python_version < \"3.11\""}
+tomli = {version = ">=2.0.1,<3.0.0", markers = 'python_version < "3.11"'}
 
 [[package]]
 name = "dnspython"
@@ -291,7 +291,7 @@ files = [
 ]
 
 [package.dependencies]
-importlib-resources = {version = ">=5.0", markers = "python_version < \"3.10\""}
+importlib-resources = {version = ">=5.0", markers = 'python_version < "3.10"'}
 
 [[package]]
 name = "future"
@@ -400,7 +400,7 @@ files = [
 ]
 
 [package.dependencies]
-zipp = {version = ">=3.1.0", markers = "python_version < \"3.10\""}
+zipp = {version = ">=3.1.0", markers = 'python_version < "3.10"'}
 
 [package.extras]
 docs = ["furo", "jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
@@ -763,7 +763,7 @@ files = [
 ]
 
 [package.dependencies]
-async-timeout = {version = ">=4.0.2", markers = "python_full_version <= \"3.11.2\""}
+async-timeout = {version = ">=4.0.2", markers = 'python_full_version <= "3.11.2"'}
 
 [package.extras]
 hiredis = ["hiredis (>=1.0.0)"]
@@ -915,7 +915,7 @@ files = [
 ]
 
 [package.dependencies]
-colorama = {version = "*", markers = "platform_system == \"Windows\""}
+colorama = {version = "*", markers = 'platform_system == "Windows"'}
 
 [package.extras]
 dev = ["py-make (>=0.1.0)", "twine", "wheel"]
