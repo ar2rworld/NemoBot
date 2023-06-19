@@ -29,7 +29,7 @@ services:
     - mongo
   mongo:
     image: mongo:4-focal
-    command: mongod --port ${mongo_port}
+    command: mongod --port ${MONGO_PORT}
     volumes:
     - ${MONGOVOLUMEPATH}:/data/db:rw
     - ${MONGOINITDBPATH}:/docker-entrypoint-initdb.d:ro
