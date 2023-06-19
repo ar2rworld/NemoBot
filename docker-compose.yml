@@ -21,8 +21,8 @@ services:
     - CALLBACKURL=${CALLBACKURL}
     - HUBURL=${HUBURL}
     ports:
-    - ${notificator_port}:${notificator_port}
-    build: .
+    - ${NOTIFICATOR_PORT}:${NOTIFICATOR_PORT}
+    image: ar2rworld/nemobot:0.0.1
     restart: always
     depends_on:
     - redis
@@ -38,11 +38,11 @@ services:
     - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
     - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
     ports:
-    - ${mongo_port}:27017
+    - ${MONGO_PORT}:27017
 
   redis:
     image: redis:6
-    command: --port ${redis_port}
+    command: --port ${REDIS_PORT}
     volumes:
     - ${REDISVOLUMEPATH}:/data
     ports:
