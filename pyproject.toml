@@ -11,7 +11,7 @@ python = "3.11.4"
 redis = "4.5.5"
 requests-html = "0.10.0"
 pymongo = "4.3.3"
-python-telegram-bot = "20.3"
+python-telegram-bot = {extras = ["job-queue"], version = "^20.3"}
 python-twitter = "^3.5"
 requests = "^2.31.0"
 defusedxml = "^0.7.1"
