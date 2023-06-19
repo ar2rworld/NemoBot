@@ -55,3 +55,4 @@ jobs:
         context: .
         push: true
         tags: ar2rworld/nemobot:0.0.1
+        labels: version=0.0.1
