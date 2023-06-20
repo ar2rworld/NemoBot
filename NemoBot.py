@@ -112,7 +112,7 @@ def setup_app_job_queue(app: Application) -> None:
     if app.job_queue is None:
         msg = "Missing job_queue in application"
         raise ValueError(msg)
-    app.job_queue.run_daily(subscribe, datetime.time(0, 0), job_kwargs={"app": app})
+    app.job_queue.run_daily(subscribe, datetime.time(0, 0))
 
     app.job_queue.run_once(send_alive_message, 0)
 

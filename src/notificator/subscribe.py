@@ -15,11 +15,11 @@ from src.decorators.admin_only import admin_only
 logging.basicConfig(filename="subscribe.log", filemode="w", level=logging.DEBUG)
 
 
-async def subscribe(app: Application) -> Coroutine[Any, Any, Any]:
-    callback_url: str = app.bot_data["callbackUrl"]
-    hub_url: str = app.bot_data["hubUrl"]
-    tg_my_id: str = app.bot_data["tg_my_id"]
-    db: Database = app.bot_data["db"]
+async def subscribe(context: ContextTypes.DEFAULT_TYPE) -> Coroutine[Any, Any, Any]:
+    callback_url: str = context.application.bot_data["callbackUrl"]
+    hub_url: str = context.application.bot_data["hubUrl"]
+    tg_my_id: str = context.application.bot_data["tg_my_id"]
+    db: Database = context.application.bot_data["db"]
 
     with open("subscribe.log", mode="w") as f:
         f.write("___very_beginning___")
@@ -52,7 +52,7 @@ async def subscribe(app: Application) -> Coroutine[Any, Any, Any]:
                     out.append(("", "invalid channelId"))
                     msg = "Missing channelId"
                     raise Exception(msg)
-            await check_subscribe_errors(app, count, out, tg_my_id)
+            await check_subscribe_errors(context.application, count, out, tg_my_id)
         except ValueError as e:
             logging.error(e)
         except TypeError as e:
@@ -78,4 +78,4 @@ async def check_subscribe_errors(app: Application, count: int, out: list[tuple[s
 
 @admin_only
 async def subscribe_to_channels(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await subscribe(context.application)
+    await subscribe(context)
