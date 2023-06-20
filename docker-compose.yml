@@ -22,7 +22,7 @@ services:
     - HUBURL=${HUBURL}
     ports:
     - ${NOTIFICATOR_PORT}:${NOTIFICATOR_PORT}
-    image: ar2rworld/nemobot:0.0.1
+    image: ar2rworld/nemobot:latest
     pull_policy: always
     restart: always
     depends_on:
