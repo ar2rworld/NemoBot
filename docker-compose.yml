@@ -30,6 +30,7 @@ services:
     - mongo
   mongo:
     image: mongo:4-focal
+    restart: always
     command: mongod --port ${MONGO_PORT}
     volumes:
     - ${MONGOVOLUMEPATH}:/data/db:rw
@@ -43,6 +44,7 @@ services:
 
   redis:
     image: redis:6
+    restart: always
     command: --port ${REDIS_PORT}
     volumes:
     - ${REDISVOLUMEPATH}:/data
