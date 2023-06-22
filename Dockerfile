@@ -7,10 +7,10 @@ RUN mkdir src
 COPY ./src /src/
 RUN mkdir tests
 COPY ./tests /tests/
-COPY NemoBot.py NemoBot.py
+COPY NemoBot.py ./
 
-COPY poetry.lock poetry.lock
-COPY pyproject.toml pyproject.toml
+COPY poetry.lock ./
+COPY pyproject.toml ./
 RUN pip install "poetry==1.5.1"
 RUN poetry install
 
