@@ -7,7 +7,7 @@ RUN mkdir src
 COPY ./src /src/
 RUN mkdir tests
 COPY ./tests /tests/
-COPY NemoBot.py .
+COPY NemoBot.py NemoBot.py
 
 COPY poetry.lock poetry.lock
 COPY pyproject.toml pyproject.toml
