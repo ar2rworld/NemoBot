@@ -36,8 +36,8 @@ async def subscribe(context: ContextTypes.DEFAULT_TYPE) -> Coroutine[Any, Any, A
                 channel_id = channel["channelId"]
                 if channel_id:
                     params = (
-                        "/subscribe?hub.mode=subscribe"
-                        + +f"&hub.callback={callback_url}"  # type: ignore[reportGeneralTypeIssues]
+                        "/subscribe?hub.mode=subscribe"  # noqa: ISC003
+                        + f"&hub.callback={callback_url}"  # type: ignore[reportGeneralTypeIssues]
                         + "&hub.verify=async"
                         + f"&hub.topic=https://www.youtube.com/xml/feeds/videos.xml?channel_id={channel_id}"
                     )
