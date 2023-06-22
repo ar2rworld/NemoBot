@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from http.server import BaseHTTPRequestHandler
 from os import getenv
@@ -24,11 +25,11 @@ class Handler(BaseHTTPRequestHandler):
         super().__init__(request, client_address, server)
         self.server: MyHttpServer = server
 
-    async def do_POST(self) -> None:  # noqa: N802
+    def do_POST(self) -> None:  # noqa: N802
         try:
             content_length = int(self.headers["Content-Length"])
             result = xml_parser(self.rfile, content_length)
-            await send_notifications(result, self.server.application, self.server.db)
+            asyncio.run(send_notifications(result, self.server.application, self.server.db))
 
             self.send_response(200)
             self.end_headers()
@@ -36,12 +37,14 @@ class Handler(BaseHTTPRequestHandler):
             server_logger.error(e)
             self.send_error(404, "Error: %s" % e)
 
-    async def do_GET(self) -> None:  # noqa: N802
+    def do_GET(self) -> None:  # noqa: N802
         try:
-            await self.server.application.bot.send_message(
-                getenv("TG_MY_ID"),
-                f"I got a message from {self.client_address}(might be important):\n{self.requestline}",
-                disable_notification=True,
+            asyncio.run(
+                self.server.application.bot.send_message(
+                    getenv("TG_MY_ID"),
+                    f"I got a message from {self.client_address}(might be important):\n{self.requestline}",
+                    disable_notification=True,
+                )
             )
             if "?" in self.requestline:
                 temp = self.requestline.split("?")[1]
