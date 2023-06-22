@@ -3,9 +3,11 @@ FROM python:3.11.4
 
 WORKDIR /usr/src/app
 
-COPY src ./src
-COPY tests ./tests
-COPY NemoBot.py NemoBot.py
+RUN mkdir src
+COPY ./src /src/
+RUN mkdir tests
+COPY ./tests /tests/
+COPY NemoBot.py .
 
 COPY poetry.lock poetry.lock
 COPY pyproject.toml pyproject.toml
