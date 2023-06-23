@@ -6,13 +6,11 @@ RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
 RUN python3 -m ensurepip
 RUN pip3 install --no-cache --upgrade pip setuptools
 
-WORKDIR /usr/src/app
+WORKDIR /src
 
-RUN mkdir src
-COPY ./src /src/
-RUN mkdir tests
-COPY ./tests /tests/
-COPY NemoBot.py ./
+COPY src ./src
+COPY tests ./tests
+COPY NemoBot.py .
 
 COPY poetry.lock ./
 COPY pyproject.toml ./
