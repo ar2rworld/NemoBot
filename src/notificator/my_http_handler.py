@@ -29,7 +29,7 @@ class Handler(BaseHTTPRequestHandler):
         try:
             content_length = int(self.headers["Content-Length"])
             result = xml_parser(self.rfile, content_length)
-            asyncio.run(send_notifications(result, self.server.application, self.server.db))
+            send_notifications(result, self.server.application, self.server.db)
 
             self.send_response(200)
             self.end_headers()
@@ -39,12 +39,15 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:  # noqa: N802
         try:
-            asyncio.run(
-                self.server.application.bot.send_message(
-                    getenv("TG_MY_ID"),
-                    f"I got a message from {self.client_address}(might be important):\n{self.requestline}",
-                    disable_notification=True,
-                )
+            send_message_queue: asyncio.Queue = self.server.application.bot_data["sendMessageQueue"]
+
+            send_message_queue.put_nowait(
+                {
+                    "application": self.server.application,
+                    "chat_id": getenv("TG_MY_ID"),
+                    "text": f"I got a message from {self.client_address}(might be important):\n{self.requestline}",
+                    "disable_notification": True,
+                }
             )
             if "?" in self.requestline:
                 temp = self.requestline.split("?")[1]
