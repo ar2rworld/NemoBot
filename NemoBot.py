@@ -1,5 +1,4 @@
 import _thread
-import asyncio
 import datetime
 import logging
 from logging import Logger
@@ -46,7 +45,7 @@ from src.utils.other import get_environment_vars
 from src.utils.queue import setup_send_message_queue
 
 
-async def main() -> None:  # noqa: PLR0915
+def main() -> None:  # noqa: PLR0915
     xml_parser_logger, error_logger, main_logger, server_logger = setup_loggers()
 
     main_logger.info("Starting...")
@@ -61,7 +60,6 @@ async def main() -> None:  # noqa: PLR0915
     r = setup_redis(getenv("DEBUG"), error_logger, main_logger, redis_host, redis_port)
 
     tasks, send_message_queue = setup_send_message_queue(1)
-    await send_message_queue
 
     app.bot_data["r"] = r
     app.bot_data["db"] = db
@@ -151,4 +149,4 @@ def setup_loggers() -> tuple[Logger, Logger, Logger, Logger]:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
