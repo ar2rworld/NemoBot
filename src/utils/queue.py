@@ -28,7 +28,6 @@ async def send_message_worker(worker_number: int, queue: Queue) -> None:
 def setup_send_message_queue(number_workers: int) -> tuple:
     queue = Queue()
     tasks = []
-    asyncio.new_event_loop()
     for number in range(number_workers):
         tasks.append(asyncio.create_task(send_message_worker(number, queue)))
     return tasks, queue
