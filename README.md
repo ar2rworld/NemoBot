@@ -74,12 +74,19 @@ docker-compose up -d
 
 `/help`
 
-
+## Autopulling and restarting services
+### Add <code>docker-compose-pull.sh</code> to your project directory
+```bash
+#!/bin/bash
+cd <PROJECT_DIR>
+docker-compose pull
+docker-compose up -d
+```
 ## Add crontab job to pull and run containers with <code>crontab -e</code>
 ```bash
-  */5  * * * * <PROJECT_DIR>/docker-compose-pull.sh
+*/5  * * * * <PROJECT_DIR>/docker-compose-pull.sh
 ```
 ### Don't forget to add execute permission
 ```bash
-  chmod +x <PROJECT_DIR>/docker-compose-pull.sh
+chmod +x <PROJECT_DIR>/docker-compose-pull.sh
 ```
