@@ -21,7 +21,7 @@
 <li>MongoDB</li>
 </ul>
 
-### Run with poetry:
+## Run with poetry:
 ```bash
     poetry env use 3.11.4
     poetry install
@@ -45,7 +45,7 @@
 ### `/my_telegram_id`
 
 #### Sends chat model right from API
-# Deploy with docker-compose
+## Deploy with docker-compose
 
 ### Customize and rename <code>template.env</code> to <code>.env</code> file
 
@@ -64,12 +64,22 @@ docker-compose up -d
     <li>Add metrics</li>
 </ul>
 
-### Linters:
+## Linters:
 ```bash
     pre-commit run -a
     pre-commit run   [hook]
 ```
 
-### For other commands:
+## For other commands:
 
 `/help`
+
+
+## Add crontab job to pull and run containers with <code>crontab -e</code>
+```bash
+  */5  * * * * <PROJECT_DIR>/docker-compose-pull.sh
+```
+### Don't forget to add execute permission
+```bash
+  chmod +x <PROJECT_DIR>/docker-compose-pull.sh
+```
