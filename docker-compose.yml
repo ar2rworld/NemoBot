@@ -2,8 +2,6 @@ version: '3.9'
 
 services:
   web:
-    volumes:
-    - ${PROJECT_DIR}:/usr/src/app
     environment:
     - REDIS_HOST=${REDIS_HOST}
     - REDIS_PORT=${REDIS_PORT}

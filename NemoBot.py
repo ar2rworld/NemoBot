@@ -1,8 +1,8 @@
-import _thread
 import datetime
 import logging
 from logging import Logger
 from os import getenv
+from threading import Thread
 
 from telegram.ext import Application
 from telegram.ext import CallbackQueryHandler
@@ -42,9 +42,11 @@ from src.utils.echo import add_echo_phrase
 from src.utils.echo_commands import my_telegram_id
 from src.utils.list_caching import load_list
 from src.utils.other import get_environment_vars
+from src.utils.queue import send_message_worker
 from src.utils.queue import setup_send_message_queue
 
 
+# run_until_complete
 def main() -> None:  # noqa: PLR0915
     xml_parser_logger, error_logger, main_logger, server_logger = setup_loggers()
 
@@ -59,7 +61,8 @@ def main() -> None:  # noqa: PLR0915
 
     r = setup_redis(getenv("DEBUG"), error_logger, main_logger, redis_host, redis_port)
 
-    tasks, send_message_queue = setup_send_message_queue(1)
+    send_message_queue, queue_thread = setup_send_message_queue()
+    queue_thread.start()
 
     app.bot_data["r"] = r
     app.bot_data["db"] = db
@@ -75,8 +78,8 @@ def main() -> None:  # noqa: PLR0915
     app.bot_data["botChannel"], app.bot_data["botGroup"] = get_environment_vars("BOTCHANNEL", "BOTGROUP")
     app.bot_data["callbackQueryHandlers"] = {}
     app.bot_data["echoHandlers"] = {}
-    app.bot_data["tasks"] = tasks
     app.bot_data["sendMessageQueue"] = send_message_queue
+    app.bot_data["workerNumber"] = 1
 
     setup_request_access_menu(app, db)
 
@@ -105,7 +108,9 @@ def main() -> None:  # noqa: PLR0915
     app.add_error_handler(error)
 
     notificator_host, notificator_port = get_environment_vars("NOTIFICATOR_HOST", "NOTIFICATOR_PORT")
-    _thread.start_new_thread(run_server, (app, db, notificator_host, notificator_port))
+
+    server_thread = Thread(target=run_server, args=(app, db, notificator_host, notificator_port))
+    server_thread.start()
 
     setup_app_job_queue(app)
 
@@ -119,7 +124,10 @@ def setup_app_job_queue(app: Application) -> None:
         raise ValueError(msg)
     app.job_queue.run_daily(subscribe, datetime.time(0, 0))
 
-    app.job_queue.run_once(send_alive_message, 0)
+    app.job_queue.run_repeating(send_message_worker, 0.1)
+
+    app.job_queue.run_once(subscribe, 0)
+    app.job_queue.run_once(send_alive_message, 1)
 
 
 def setup_loggers() -> tuple[Logger, Logger, Logger, Logger]:
@@ -149,4 +157,7 @@ def setup_loggers() -> tuple[Logger, Logger, Logger, Logger]:
 
 
 if __name__ == "__main__":
+    # new_loop = asyncio.new_event_loop()
+    # new_loop.run_until_complete(main())
+    # asyncio.run(main())
     main()
