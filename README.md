@@ -2,6 +2,11 @@
 
 ## Hello there, just a simple telegram bot friends conversation
 
+### Has a youtube notificator feature by subscribing to pubsubhubbub's rss to send a message about new uploaded videos.
+### Able to echo some phrases to the chat if key words were found
+### 50/50 chance commands
+
+
 ### id: nemo4_bot
 
 ## Technologies:
