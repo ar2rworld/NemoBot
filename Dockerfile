@@ -14,7 +14,7 @@ COPY NemoBot.py .
 
 COPY poetry.lock ./
 COPY pyproject.toml ./
-RUN pip3 install "poetry==1.5.1"
+RUN pip3 install "poetry==1.7.1"
 RUN poetry install
 
 CMD ["poetry", "run", "python", "NemoBot.py"]
