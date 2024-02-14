@@ -2,28 +2,44 @@
 
 ## Hello there, just a simple telegram bot friends conversation
 
+### Has a youtube notificator feature by subscribing to pubsubhubbub's rss to send a message about new uploaded videos.
+### Able to echo some phrases to the chat if key words were found
+### 50/50 chance commands
+
+
 ### id: nemo4_bot
 
 ## Technologies:
 
 <ul>
-<li>Python 3.11</li>
+<li>Python 3.11.4</li>
   <ul>
     <li>redis</li>
-    <li>requests_html</li>
+    <li>requests-html</li>
+    <li>pymongo</li>
     <li>python-telegram-bot</li>
     <li>python-twitter</li>
-    <li>pymongo</li>
+    <li>requests</li>
+    <li>defusedxml</li>
   </ul>
 <li>Redis</li>
 <li>MongoDB</li>
 </ul>
 
-## Run
-
+## Run with poetry:
 ```bash
-python NemoBot.py
+    poetry env use 3.11.4
+    poetry install
+    poetry run python NemoBot.py
 ```
+#### If you have your `poetry` not working, try reinstalling.
+#### If
+```
+poetry/1.7.1/libexec/lib/python3.12/site-packages/poetry/utils/env/base_env.py", line 15, in <module>
+    from virtualenv.seed.wheels.embed import get_embed_wheel
+ModuleNotFoundError: No module named 'virtualenv'
+```
+do `poetry/1.7.1/libexec/bin/python3.12 -m pip install virtualenv`
 
 ## Commands:
 
@@ -31,8 +47,8 @@ python NemoBot.py
 
 #### Supports commands for social media posts:
 
-##### API keys required
-
+#### API keys required
+#### (Not in service for now)
 <ul>
   <li>linkedin.com</li>
   <li>vk.com???</li>
@@ -42,62 +58,48 @@ python NemoBot.py
 ### `/my_telegram_id`
 
 #### Sends chat model right from API
-
 ## Deploy with docker-compose
 
-### Add .env file:
-```
-PROJECT_DIR=path/to/project
-REDIS_HOST=redis_host
-REDIS_PORT=redis_port
-MONGO_HOST=mongo_host
-MONGO_PORT=mongo_port
-MONGO_DBNAME=mongo_dbname
-MONGO_INITDB_ROOT_USERNAME=MONGO_INITDB_ROOT_USERNAME
-MONGO_INITDB_ROOT_PASSWORD=MONGO_INITDB_ROOT_PASSWORD
-NEMOBOTTOKEN=Telegram_Bot_Token
-BOTGROUP=botGroupId
-BOTCHANNEL=botGroupId
-TG_MY_ID=Your_Telegram_Id
-NOTIFICATOR_HOST=notificator_host
-NOTIFICATOR_PORT=notificator_port
-CALLBACKURL=url_to_you_instance.com/add_proxy_pass_to_nginx
-HUBURL=https://pubsubhubbub.appspot.com
-MONGOVOLUMEPATH=mongo_volume_path
-MONGOINITDBPATH=mongo_initdb_path
-REDISVOLUMEPATH=redis_volume_path
-LINKEDIN_HEADERS=someJsonHeadersStructure
-LINKEDIN_URN=someLinkedinUrn
-VK_EMAIL=vkEmailOrPhone
-VK_PASS=vkPassword
-```
+### Customize and rename <code>template.env</code> to <code>.env</code> file
 
 ### Command
 ```bash
-docker-compose --env-file .env up --remove-orphans -d
+docker-compose up -d
 ```
 
 ## TODO:
 <ul>
-    <li>Tests</li>
-    <li>Run linters</li>
-    <li>Push container to registry</li>
+    <li>+- Tests</li>
+    <li>+ Run linters</li>
+    <li>+ Push container to registry</li>
     <li>Deploy to server</li>
     <li>Add alerts</li>
     <li>Add metrics</li>
 </ul>
 
-### Linters:
+## Linters:
 ```bash
     pre-commit run -a
     pre-commit run   [hook]
 ```
 
-### Run with poetry:
-```bash
-    poetry run python NemoBot.py
-```
-
-### For other commands:
+## For other commands:
 
 `/help`
+
+## Autopulling and restarting services
+### Add <code>docker-compose-pull.sh</code> to your project directory
+```bash
+#!/bin/bash
+cd <PROJECT_DIR>
+docker-compose pull
+docker-compose up -d
+```
+## Add crontab job to pull and run containers with <code>crontab -e</code>
+```bash
+*/5  * * * * <PROJECT_DIR>/docker-compose-pull.sh
+```
+### Don't forget to add execute permission
+```bash
+chmod +x <PROJECT_DIR>/docker-compose-pull.sh
+```
