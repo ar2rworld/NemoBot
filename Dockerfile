@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Install python/pip
-FROM alpine:3.18.2
+FROM python:3.11.4-alpine3.18
 ENV PYTHONUNBUFFERED=1
 RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
 RUN python3 -m ensurepip
