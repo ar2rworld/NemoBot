@@ -32,6 +32,14 @@
     poetry install
     poetry run python NemoBot.py
 ```
+#### If you have your `poetry` not working, try reinstalling.
+#### If
+```
+poetry/1.7.1/libexec/lib/python3.12/site-packages/poetry/utils/env/base_env.py", line 15, in <module>
+    from virtualenv.seed.wheels.embed import get_embed_wheel
+ModuleNotFoundError: No module named 'virtualenv'
+```
+do `poetry/1.7.1/libexec/bin/python3.12 -m pip install virtualenv`
 
 ## Commands:
 
